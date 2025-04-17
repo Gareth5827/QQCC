@@ -99,7 +99,8 @@
         <div>
             <h2>Item</h2>
             <div class="box" id="itemBox"></div>
-            
+            <h2>Bonuses</h2>
+            <div class="box" id="profBox"></div>
             <h2>Lore</h2>
             <div class="box" id="loreBox"></div>
         </div>
@@ -187,6 +188,14 @@
             { name: "Ring", statEffects: { PWR: 1 }, attributeEffects: { advantage: 1 } },
             // Add more items as needed
         ];
+
+        const profList = [
+            "+1 Might +1 Stealth +1 Arcana",
+            "+2 Might +1 Survival",
+            "+1 Agility +1 Perception",
+            "+2 Arcana +1 Might",
+            // Add more professions as needed
+        ];
         
         const loreList = [
             "You are a knight!",
@@ -219,6 +228,12 @@
             "You are from another dimension!",
             "The laws of physics don't apply to you!",
             "You see through the veil of reality!"
+        ];
+        
+        const weirdWorldProfList = [
+            "+3 Quantum Physics +1 Reality Warping",
+            "+2 Chronomancy +1 Dimensional Rifting",
+            // Add more weird world professions
         ];
         
         // DOM elements
@@ -342,6 +357,7 @@
             passiveBox.textContent = '';
             itemBox.textContent = '';
             loreBox.textContent = '';
+            profBox.textContent = '';
             
             // Reset stats and attributes
             resetStatsAndAttributes();
@@ -376,6 +392,30 @@
             
             const lore1 = num1 < loreList.length ? loreList[num1] : "Unknown Lore";
             const lore2 = num2 < loreList.length ? loreList[num2] : "Unknown Lore";
+            
+            // Get professions from lists
+            const prof1 = num1 < profList.length ? profList[num1] : "+0 Bonus";
+            const prof2 = num2 < profList.length ? profList[num2] : "+0 Bonus";
+    
+            // Get weird world professions if toggle is on
+            if (weirdWorldToggle.checked) {
+                if (num1 >= maxRegularIndex) {
+                    const weirdIndex = num1 - maxRegularIndex;
+                    if (weirdIndex < weirdWorldProfList.length) {
+                        prof1 = weirdWorldProfList[weirdIndex];
+                    }
+                }
+                if (num2 >= maxRegularIndex) {
+                    const weirdIndex = num2 - maxRegularIndex;
+                    if (weirdIndex < weirdWorldProfList.length) {
+                        prof2 = weirdWorldProfList[weirdIndex];
+                    }
+                }
+            }
+    
+            // Process and combine professions
+            const combinedProfessions = combineProfessions(prof1, prof2);
+            profBox.textContent = combinedProfessions;
             
             // Get weird world items if toggle is on and numbers are in that range
             if (weirdWorldToggle.checked) {
@@ -418,6 +458,37 @@
             
             // Update displays
             updateStatDisplays();
+        }
+
+                // New function to combine and format professions
+        function combineProfessions(prof1, prof2) {
+            const skillMap = new Map();
+            
+            // Helper function to parse and add skills
+            function parseSkills(profText) {
+                const skillMatches = profText.matchAll(/\+(\d+) (\w+)/g);
+                for (const match of skillMatches) {
+                    const value = parseInt(match[1]);
+                    const skill = match[2];
+                    skillMap.set(skill, (skillMap.get(skill) || 0) + value);
+                }
+            }
+            
+            // Parse both profession strings
+            parseSkills(prof1);
+            parseSkills(prof2);
+            
+            // Convert to array and sort
+            const sortedSkills = Array.from(skillMap.entries())
+                .sort((a, b) => {
+                    // First sort by value (descending)
+                    if (b[1] !== a[1]) return b[1] - a[1];
+                    // Then sort alphabetically
+                    return a[0].localeCompare(b[0]);
+                });
+            
+            // Format the output
+            return sortedSkills.map(([skill, value]) => `+${value} ${skill}`).join(', ');
         }
         
         // Event listener for reroll button
