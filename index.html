@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Stats Tracker</title>
+    <title>QuickQuest Character Creator</title>
     <style>
         /* Basic styling for the page */
         body {
@@ -17,16 +17,17 @@
         .container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 30px; /* Increased from 20px */
         }
         
         .box {
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
+            white-space: pre-line;
+            overflow-y: auto;
             min-height: 100px;
+            max-height: 300px;
+            padding: 15px;
+            line-height: 1.8; /* Increased from ~1.5 */
+            margin-bottom: 25px; /* Increased space between stacked boxes */
         }
         
         .stats-container {
@@ -855,20 +856,20 @@ function reroll() {
     }
     
     // Get items from lists - changed these to let since we might reassign them for weird world
-    let weapon1 = num1 < weaponList.length ? weaponList[num1] : "Unknown Weapon";
-    let weapon2 = num2 < weaponList.length ? weaponList[num2] : "Unknown Weapon";
+    let weapon1 = num1 < weaponList.length ? weaponList[num1] : "N/A";
+    let weapon2 = num2 < weaponList.length ? weaponList[num2] : "N/A";
     
-    let spell1 = num1 < spellList.length ? spellList[num1] : "Unknown Spell";
-    let spell2 = num2 < spellList.length ? spellList[num2] : "Unknown Spell";
+    let spell1 = num1 < spellList.length ? spellList[num1] : "N/A";
+    let spell2 = num2 < spellList.length ? spellList[num2] : "N/A";
     
-    let passive1 = num1 < passiveList.length ? passiveList[num1] : "Unknown Passive";
-    let passive2 = num2 < passiveList.length ? passiveList[num2] : "Unknown Passive";
+    let passive1 = num1 < passiveList.length ? passiveList[num1] : "N/A";
+    let passive2 = num2 < passiveList.length ? passiveList[num2] : "N/A";
     
-    let item1 = num1 < itemList.length ? itemList[num1] : { name: "Unknown Item" };
-    let item2 = num2 < itemList.length ? itemList[num2] : { name: "Unknown Item" };
+    let item1 = num1 < itemList.length ? itemList[num1] : { name: "N/A" };
+    let item2 = num2 < itemList.length ? itemList[num2] : { name: "N/A" };
     
-    let lore1 = num1 < loreList.length ? loreList[num1] : "Unknown Lore";
-    let lore2 = num2 < loreList.length ? loreList[num2] : "Unknown Lore";
+    let lore1 = num1 < loreList.length ? loreList[num1] : "N/A";
+    let lore2 = num2 < loreList.length ? loreList[num2] : "N/A";
     
     // Get professions from lists - changed to let for weird world reassignment
     let prof1 = num1 < profList.length ? profList[num1] : "+0 Bonus";
@@ -916,15 +917,15 @@ function reroll() {
     }
     
     // Display results with proper line breaks
-    weaponBox.innerHTML = `${weapon1}<br>${weapon2}`;
-    spellBox.innerHTML = `${spell1}<br>${spell2}`;
-    passiveBox.innerHTML = `${passive1}<br>${passive2}`;
-    itemBox.innerHTML = `${item1.name}<br>${item2.name}`;
+    weaponBox.innerHTML = formatMultiItemEntry(`${weapon1}<br><br>${weapon2}`);
+    spellBox.innerHTML = formatMultiItemEntry(`${spell1}<br><br>${spell2}`);
+    passiveBox.innerHTML = formatMultiItemEntry(`${passive1}<br><br>${passive2}`);
+    itemBox.innerHTML = formatMultiItemEntry(`${item1.name}<br><br>${item2.name}`);
     
     // Display lore if toggle is on
     if (loreToggle.checked) {
         loreBox.innerHTML = `${lore1}<br><br>${lore2}`;
-    }
+        }
     
     // NEW STAT LOGIC: Apply stat changes first
     if (item1.statEffects) applyStatChanges(item1.statEffects);
@@ -936,6 +937,12 @@ function reroll() {
     
     // Update displays
     updateStatDisplays();
+}
+
+        // Helper function to split and format multi-item entries
+function formatMultiItemEntry(entry) {
+    // Split by 3 or more spaces (regex: \s{3,})
+    return entry.split(/\s{3,}/).join('<br><br>');
 }
 
                 // New function to combine and format professions
