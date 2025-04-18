@@ -753,43 +753,71 @@ const profList = [
             advantageStat.textContent = `Advantage: ${attributes.advantage}`;
         }
         
-        // Function to apply stat changes (handles opposites)
-        function applyStatChanges(statChanges) {
-            for (const [stat, value] of Object.entries(statChanges)) {
-                // Apply the stat change
-                stats[stat] += value;
-                
-                // Apply opposite stat changes
-                switch(stat) {
-                    case 'END':
-                        stats.ALL -= value;
-                        break;
-                    case 'ALL':
-                        stats.END -= value;
-                        break;
-                    case 'AGI':
-                        stats.INS += value;
-                        break;
-                    case 'INS':
-                        stats.AGI += value;
-                        break;
-                    case 'PWR':
-                        stats.WIT += value;
-                        break;
-                    case 'WIT':
-                        stats.PWR += value;
-                        break;
-                }
-            }
-            
-            // Update attributes based on stats
-            attributes.health = baseAttributes.health + stats.END;
-            attributes.mana = baseAttributes.mana + stats.INS;
-            attributes.manaRegen = baseAttributes.manaRegen + stats.WIT;
-            attributes.swiftness = baseAttributes.swiftness + stats.AGI;
-            attributes.spirit = baseAttributes.spirit + stats.ALL;
-            attributes.advantage = baseAttributes.advantage + stats.PWR;
+// Function to apply stat changes (handles opposites)
+function applyStatChanges(statChanges) {
+    // First apply all the positive changes
+    for (const [stat, value] of Object.entries(statChanges)) {
+        stats[stat] += value;
+    }
+    
+    // Then apply the opposite stat changes
+    for (const [stat, value] of Object.entries(statChanges)) {
+        switch(stat) {
+            case 'END':
+                stats.ALL -= value;
+                break;
+            case 'ALL':
+                stats.END -= value;
+                break;
+            case 'AGI':
+                stats.INS -= value;
+                break;
+            case 'INS':
+                stats.AGI -= value;
+                break;
+            case 'PWR':
+                stats.WIT -= value;
+                break;
+            case 'WIT':
+                stats.PWR -= value;
+                break;
         }
+    }
+    
+    // Update attributes based on stats
+    updateAttributesFromStats();
+}
+
+// Function to update attributes based on current stats
+function updateAttributesFromStats() {
+    attributes.health = baseAttributes.health + stats.END;
+    // Add any health bonuses from items (handled separately)
+    
+    attributes.mana = baseAttributes.mana + stats.INS;
+    attributes.manaRegen = baseAttributes.manaRegen + stats.WIT;
+    attributes.swiftness = baseAttributes.swiftness + stats.AGI;
+    attributes.spirit = baseAttributes.spirit + stats.ALL;
+    attributes.advantage = baseAttributes.advantage + stats.PWR;
+}
+
+// Function to reset all stats and attributes to base values
+function resetStatsAndAttributes() {
+    // Reset stats
+    stats = {
+        END: 0,
+        INS: 0,
+        WIT: 0,
+        AGI: 0,
+        ALL: 0,
+        PWR: 0
+    };
+    
+    // Reset attributes to base values
+    attributes = JSON.parse(JSON.stringify(baseAttributes));
+    
+    // Update stat displays
+    updateStatDisplays();
+}
         
         // Function to apply attribute changes
         function applyAttributeChanges(attributeChanges) {
@@ -798,116 +826,117 @@ const profList = [
             }
         }
         
-        // Function to perform a reroll
-        function reroll() {
-            // Clear all boxes
-            weaponBox.textContent = '';
-            spellBox.textContent = '';
-            passiveBox.textContent = '';
-            itemBox.textContent = '';
-            loreBox.textContent = '';
-            profBox.textContent = '';
-            
-            // Reset stats and attributes
-            resetStatsAndAttributes();
-            
-            // Determine the maximum index based on toggle
-            const maxRegularIndex = 59; // Assuming you have 60 items (0-59)
-            const maxWeirdWorldIndex = 69; // Assuming you have 70 items (0-69)
-            
-            const maxIndex = weirdWorldToggle.checked ? maxWeirdWorldIndex : maxRegularIndex;
-            
-            // Get two different random numbers
-            let num1 = getRandomNumber(maxIndex);
-            let num2 = getRandomNumber(maxIndex);
-            
-            // Ensure they're different
-            while (num2 === num1) {
-                num2 = getRandomNumber(maxIndex);
-            }
-            
-            // Get items from lists
-            const weapon1 = num1 < weaponList.length ? weaponList[num1] : "Unknown Weapon";
-            const weapon2 = num2 < weaponList.length ? weaponList[num2] : "Unknown Weapon";
-            
-            const spell1 = num1 < spellList.length ? spellList[num1] : "Unknown Spell";
-            const spell2 = num2 < spellList.length ? spellList[num2] : "Unknown Spell";
-            
-            const passive1 = num1 < passiveList.length ? passiveList[num1] : "Unknown Passive";
-            const passive2 = num2 < passiveList.length ? passiveList[num2] : "Unknown Passive";
-            
-            const item1 = num1 < itemList.length ? itemList[num1] : { name: "Unknown Item" };
-            const item2 = num2 < itemList.length ? itemList[num2] : { name: "Unknown Item" };
-            
-            const lore1 = num1 < loreList.length ? loreList[num1] : "Unknown Lore";
-            const lore2 = num2 < loreList.length ? loreList[num2] : "Unknown Lore";
-            
-            // Get professions from lists
-            const prof1 = num1 < profList.length ? profList[num1] : "+0 Bonus";
-            const prof2 = num2 < profList.length ? profList[num2] : "+0 Bonus";
+// Function to perform a reroll
+function reroll() {
+    // Clear all boxes
+    weaponBox.textContent = '';
+    spellBox.textContent = '';
+    passiveBox.textContent = '';
+    itemBox.textContent = '';
+    loreBox.textContent = '';
+    profBox.textContent = '';
     
-            // Get weird world professions if toggle is on
-            if (weirdWorldToggle.checked) {
-                if (num1 >= maxRegularIndex) {
-                    const weirdIndex = num1 - maxRegularIndex;
-                    if (weirdIndex < weirdWorldProfList.length) {
-                        prof1 = weirdWorldProfList[weirdIndex];
-                    }
-                }
-                if (num2 >= maxRegularIndex) {
-                    const weirdIndex = num2 - maxRegularIndex;
-                    if (weirdIndex < weirdWorldProfList.length) {
-                        prof2 = weirdWorldProfList[weirdIndex];
-                    }
-                }
-            }
+    // Reset stats and attributes
+    resetStatsAndAttributes();
     
-            // Process and combine professions
-            const combinedProfessions = combineProfessions(prof1, prof2);
-            profBox.textContent = combinedProfessions;
-            
-            // Get weird world items if toggle is on and numbers are in that range
-            if (weirdWorldToggle.checked) {
-                if (num1 >= maxRegularIndex) {
-                    const weirdIndex = num1 - maxRegularIndex;
-                    if (weirdIndex < weirdWorldWeapons.length) weapon1 = weirdWorldWeapons[weirdIndex];
-                    if (weirdIndex < weirdWorldSpells.length) spell1 = weirdWorldSpells[weirdIndex];
-                    if (weirdIndex < weirdWorldPassives.length) passive1 = weirdWorldPassives[weirdIndex];
-                    if (weirdIndex < weirdWorldItems.length) item1 = weirdWorldItems[weirdIndex];
-                    if (weirdIndex < weirdWorldLore.length) lore1 = weirdWorldLore[weirdIndex];
-                }
-                
-                if (num2 >= maxRegularIndex) {
-                    const weirdIndex = num2 - maxRegularIndex;
-                    if (weirdIndex < weirdWorldWeapons.length) weapon2 = weirdWorldWeapons[weirdIndex];
-                    if (weirdIndex < weirdWorldSpells.length) spell2 = weirdWorldSpells[weirdIndex];
-                    if (weirdIndex < weirdWorldPassives.length) passive2 = weirdWorldPassives[weirdIndex];
-                    if (weirdIndex < weirdWorldItems.length) item2 = weirdWorldItems[weirdIndex];
-                    if (weirdIndex < weirdWorldLore.length) lore2 = weirdWorldLore[weirdIndex];
-                }
+    // Determine the maximum index based on toggle
+    const maxRegularIndex = 59; // Assuming you have 60 items (0-59)
+    const maxWeirdWorldIndex = 69; // Assuming you have 70 items (0-69)
+    
+    const maxIndex = weirdWorldToggle.checked ? maxWeirdWorldIndex : maxRegularIndex;
+    
+    // Get two different random numbers
+    let num1 = getRandomNumber(maxIndex);
+    let num2 = getRandomNumber(maxIndex);
+    
+    // Ensure they're different
+    while (num2 === num1) {
+        num2 = getRandomNumber(maxIndex);
+    }
+    
+    // Get items from lists - changed these to let since we might reassign them for weird world
+    let weapon1 = num1 < weaponList.length ? weaponList[num1] : "Unknown Weapon";
+    let weapon2 = num2 < weaponList.length ? weaponList[num2] : "Unknown Weapon";
+    
+    let spell1 = num1 < spellList.length ? spellList[num1] : "Unknown Spell";
+    let spell2 = num2 < spellList.length ? spellList[num2] : "Unknown Spell";
+    
+    let passive1 = num1 < passiveList.length ? passiveList[num1] : "Unknown Passive";
+    let passive2 = num2 < passiveList.length ? passiveList[num2] : "Unknown Passive";
+    
+    let item1 = num1 < itemList.length ? itemList[num1] : { name: "Unknown Item" };
+    let item2 = num2 < itemList.length ? itemList[num2] : { name: "Unknown Item" };
+    
+    let lore1 = num1 < loreList.length ? loreList[num1] : "Unknown Lore";
+    let lore2 = num2 < loreList.length ? loreList[num2] : "Unknown Lore";
+    
+    // Get professions from lists - changed to let for weird world reassignment
+    let prof1 = num1 < profList.length ? profList[num1] : "+0 Bonus";
+    let prof2 = num2 < profList.length ? profList[num2] : "+0 Bonus";
+
+    // Get weird world professions if toggle is on
+    if (weirdWorldToggle.checked) {
+        if (num1 >= maxRegularIndex) {
+            const weirdIndex = num1 - maxRegularIndex;
+            if (weirdIndex < weirdWorldProfList.length) {
+                prof1 = weirdWorldProfList[weirdIndex];
             }
-            
-            // Display results
-            weaponBox.textContent = `${weapon1} / ${weapon2}`;
-            spellBox.textContent = `${spell1} / ${spell2}`;
-            passiveBox.textContent = `${passive1} / ${passive2}`;
-            itemBox.textContent = `${item1.name} / ${item2.name}`;
-            
-            // Display lore if toggle is on
-            if (loreToggle.checked) {
-                loreBox.textContent = `${lore1}\n\n${lore2}`;
-            }
-            
-            // Apply stat and attribute changes from items
-            if (item1.statEffects) applyStatChanges(item1.statEffects);
-            if (item1.attributeEffects) applyAttributeChanges(item1.attributeEffects);
-            
-            if (item2.statEffects) applyStatChanges(item2.statEffects);
-            if (item2.attributeEffects) applyAttributeChanges(item2.attributeEffects);
-            
-            // Update displays
-            updateStatDisplays();
         }
+        if (num2 >= maxRegularIndex) {
+            const weirdIndex = num2 - maxRegularIndex;
+            if (weirdIndex < weirdWorldProfList.length) {
+                prof2 = weirdWorldProfList[weirdIndex];
+            }
+        }
+    }
+
+    // Process and combine professions
+    const combinedProfessions = combineProfessions(prof1, prof2);
+    profBox.textContent = combinedProfessions;
+    
+    // Get weird world items if toggle is on and numbers are in that range
+    if (weirdWorldToggle.checked) {
+        if (num1 >= maxRegularIndex) {
+            const weirdIndex = num1 - maxRegularIndex;
+            if (weirdIndex < weirdWorldWeapons.length) weapon1 = weirdWorldWeapons[weirdIndex];
+            if (weirdIndex < weirdWorldSpells.length) spell1 = weirdWorldSpells[weirdIndex];
+            if (weirdIndex < weirdWorldPassives.length) passive1 = weirdWorldPassives[weirdIndex];
+            if (weirdIndex < weirdWorldItems.length) item1 = weirdWorldItems[weirdIndex];
+            if (weirdIndex < weirdWorldLore.length) lore1 = weirdWorldLore[weirdIndex];
+        }
+        
+        if (num2 >= maxRegularIndex) {
+            const weirdIndex = num2 - maxRegularIndex;
+            if (weirdIndex < weirdWorldWeapons.length) weapon2 = weirdWorldWeapons[weirdIndex];
+            if (weirdIndex < weirdWorldSpells.length) spell2 = weirdWorldSpells[weirdIndex];
+            if (weirdIndex < weirdWorldPassives.length) passive2 = weirdWorldPassives[weirdIndex];
+            if (weirdIndex < weirdWorldItems.length) item2 = weirdWorldItems[weirdIndex];
+            if (weirdIndex < weirdWorldLore.length) lore2 = weirdWorldLore[weirdIndex];
+        }
+    }
+    
+    // Display results
+    weaponBox.textContent = `${weapon1} / ${weapon2}`;
+    spellBox.textContent = `${spell1} / ${spell2}`;
+    passiveBox.textContent = `${passive1} / ${passive2}`;
+    itemBox.textContent = `${item1.name} / ${item2.name}`;
+    
+    // Display lore if toggle is on
+    if (loreToggle.checked) {
+        loreBox.textContent = `${lore1}\n\n${lore2}`;
+    }
+    
+    // NEW STAT LOGIC: Apply stat changes first
+    if (item1.statEffects) applyStatChanges(item1.statEffects);
+    if (item2.statEffects) applyStatChanges(item2.statEffects);
+    
+    // Then apply attribute changes (including any direct health bonuses)
+    if (item1.attributeEffects) applyAttributeChanges(item1.attributeEffects);
+    if (item2.attributeEffects) applyAttributeChanges(item2.attributeEffects);
+    
+    // Update displays
+    updateStatDisplays();
+}
 
                 // New function to combine and format professions
         function combineProfessions(prof1, prof2) {
