@@ -473,18 +473,18 @@ const itemList = [
     { name: "Aquamancers bracelet", statEffects: { ALL: 2, INS: 1 }, attributeEffects: { Mana: 5 } },
     { name: "Hunters armlet", statEffects: { AGI: 4, PWR: 2 } },
     { name: "Seafolk tiara", statEffects: { END: 3, WIT: 2 }, attributeEffects: { Swiftness: 1 } },
-    { name: "Angelic chestplate", statEffects: { , END: 3, PWR: 2 }, attributeEffects: { Health:3 } },
+    { name: "Angelic chestplate", statEffects: { END: 3, PWR: 2 }, attributeEffects: { Health: 3 } },
     { name: "Underworld gemstone", statEffects: { WIT: 2 }, attributeEffects: { Swiftness: 1, Spirit: 1 } },
     { name: "Cloudstriders charm", statEffects: { END: 2, INS: 2, WIT: 1 }, attributeEffects: { Health: 3 } },
     { name: "Dragonscale chestplate", statEffects: { END: 4 }, attributeEffects: { Health: 6, Swiftness: -2, Spirit: -2 } },
     { name: "Draconic cloak", statEffects: { AGI: 2, WIT: 2, ALL: 1 } },
-    { name: "Geomancers chestplate", statEffects: { END: 3, PWR: 1 }, attributeEffects: { Mana 4, ManaRegen: 1 } },
+    { name: "Geomancers chestplate", statEffects: { END: 3, PWR: 1 }, attributeEffects: { Mana: 4, ManaRegen: 1 } },
     { name: "Archmage's amulet", statEffects: { INS: 4, WIT: 1 }, attributeEffects: { Mana: 5 } },
     { name: "Holy locket", statEffects: { INS: 2, ALL: 2, WIT: 1 } },
-    { name: "Shamans garb", statEffects: { INS: 2, ALL: 2 }, attributeEffects: { Health 3, Mana: 3 } },
+    { name: "Shamans garb", statEffects: { INS: 2, ALL: 2 }, attributeEffects: { Health: 3, Mana: 3 } },
     { name: "Rampagers helmet", statEffects: { PWR: 3, AGI: 2, END: 2 } },
     { name: "Electromancers helmet", statEffects: { INS: 2 }, attributeEffects: { Health: 5, Spirit: 1 } },
-    { name: "Sunken armlet", statEffects: { PWR: 2, INS: 2 }, attributeEffects: { Mana 5, ManaRegen: 1 } },
+    { name: "Sunken armlet", statEffects: { PWR: 2, INS: 2 }, attributeEffects: { Mana: 5, ManaRegen: 1 } },
     { name: "Demonic charm", statEffects: { INS: 3, WIT: 3 } },
     { name: "Warlords leg guards", statEffects: { PWR: 3, END: 2 }, attributeEffects: { Health: 5 } },
     { name: "Dark omen of protection", statEffects: { END: 4, PWR: 2 } },
@@ -510,12 +510,12 @@ const itemList = [
     { name: "Spiked handwraps", statEffects: { PWR: 3, AGI: 3 }, attributeEffects: { Spirit: 1 } },
     { name: "Graveborn amulet", statEffects: { PWR: 3, INS: 3 }, attributeEffects: { Mana: 6 } },
     { name: "Wanderers ring", statEffects: { END: 4, WIT: 1 }, attributeEffects: { Mana: 7 } },
-    { name: "Wise amulet", statEffects: { attributeEffects: { Health: 4, Mana 4, ManaRegen: 1, Spirit: 1 } },
+    { name: "Wise amulet", statEffects: {}, attributeEffects: { Health: 4, Mana: 4, ManaRegen: 1, Spirit: 1 } },
     { name: "Forbidden crown", statEffects: { INS: 3, WIT: 3 }, attributeEffects: { Spirit: 1 } },
     { name: "Buried gauntlet", statEffects: { END: 4, PWR: 3 }, attributeEffects: { Swiftness: 2 } },
     { name: "Tribal garb", statEffects: { INS: 3, WIT: 3 }, attributeEffects: { Spirit: 2, Swiftness: 1 } },
     { name: "Priests robe", statEffects: { END: 2, INS: 2, WIT: 1 }, attributeEffects: { Mana: 5 } },
-    { name: "Kings cloak", statEffects: { attributeEffects: { Mana: 7, Health: 5, Swiftness: 1 } },
+    { name: "Kings cloak", statEffects: {}, attributeEffects: { Mana: 7, Health: 5, Swiftness: 1 } },
     { name: "Shamans bracelet", statEffects: { INS: 2, WIT: 1 }, attributeEffects: { Mana: 8 } },
     { name: "Boots of the wicked", statEffects: { PWR: 3, AGI: 1 }, attributeEffects: { Swiftness: 2 } },
     { name: "Great rogues regalia", statEffects: { AGI: 4, ALL: 3 } },
@@ -527,7 +527,7 @@ const itemList = [
     { name: "Sages robe", statEffects: { INS: 2, WIT: 2 } },
     { name: "The forbidden lords crystal eye", statEffects: { INS: 4, ALL: 4, AGI: 2 } },
     { name: "Forgotten handwraps", statEffects: { PWR: 2, AGI: 2, ALL: 2 } },
-    { name: "Stormcallers hood", statEffects: { INS: 2, AGI: 2 }, attributeEffects: { Mana 4, Spirit: 1 } },
+    { name: "Stormcallers hood", statEffects: { INS: 2, AGI: 2 }, attributeEffects: { Mana: 4, Spirit: 1 } }
     { name: "Birthday suit", statEffects: { PWR: 5, AGI: 5, ALL: 5 }, attributeEffects: { Health: 7, Swiftness: -7, Spirit: -7 } }
 ];
 
@@ -691,6 +691,7 @@ const profList = [
         const itemBox = document.getElementById('itemBox');
         const loreBox = document.getElementById('loreBox');
         const rerollButton = document.getElementById('rerollButton');
+        const profBox = document.getElementById('profBox');
         const loreToggle = document.getElementById('loreToggle');
         const weirdWorldToggle = document.getElementById('weirdWorldToggle');
         
