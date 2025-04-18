@@ -915,15 +915,15 @@ function reroll() {
         }
     }
     
-    // Display results
-    weaponBox.textContent = `${weapon1} / ${weapon2}`;
-    spellBox.textContent = `${spell1} / ${spell2}`;
-    passiveBox.textContent = `${passive1} / ${passive2}`;
-    itemBox.textContent = `${item1.name} / ${item2.name}`;
+    // Display results with proper line breaks
+    weaponBox.innerHTML = `${weapon1}<br>${weapon2}`;
+    spellBox.innerHTML = `${spell1}<br>${spell2}`;
+    passiveBox.innerHTML = `${passive1}<br>${passive2}`;
+    itemBox.innerHTML = `${item1.name}<br>${item2.name}`;
     
     // Display lore if toggle is on
     if (loreToggle.checked) {
-        loreBox.textContent = `${lore1}\n\n${lore2}`;
+        loreBox.innerHTML = `${lore1}<br><br>${lore2}`;
     }
     
     // NEW STAT LOGIC: Apply stat changes first
