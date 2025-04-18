@@ -66,7 +66,7 @@
     </style>
 </head>
 <body>
-    <h1>Interactive Stats Tracker</h1>
+    <h1>QuickQuest Character Creator</h1>
     
     <!-- Toggle switches -->
     <div class="toggle-container">
@@ -919,7 +919,7 @@ function reroll() {
     weaponBox.innerHTML = formatMultiItemEntry(`${weapon1}<br><br>${weapon2}`);
     spellBox.innerHTML = formatMultiItemEntry(`${spell1}<br><br>${spell2}`);
     passiveBox.innerHTML = formatMultiItemEntry(`${passive1}<br><br>${passive2}`);
-    itemBox.innerHTML = formatMultiItemEntry(`${item1.name}<br><br>${item2.name}`);
+    itemBox.innerHTML = formatMultiItemEntry(`${formatItemText(item1)}<br><br>${formatItemText(item2)}`);
     
     // Display lore if toggle is on
     if (loreToggle.checked) {
@@ -937,6 +937,37 @@ function reroll() {
     // Update displays
     updateStatDisplays();
 }
+
+            // Helper function to format item text with stats
+    function formatItemText(item) {
+        let text = item.name;
+        const statParts = [];
+        const attributeParts = [];
+        
+        // Add stat effects if they exist
+        if (item.statEffects) {
+            for (const [stat, value] of Object.entries(item.statEffects)) {
+                statParts.push(`${value > 0 ? '+' : ''}${value} ${stat}`);
+            }
+        }
+        
+        // Add attribute effects if they exist
+        if (item.attributeEffects) {
+            for (const [attr, value] of Object.entries(item.attributeEffects)) {
+                // Capitalize first letter of attribute
+                const attrName = attr.charAt(0).toUpperCase() + attr.slice(1);
+                attributeParts.push(`${value > 0 ? '+' : ''}${value} ${attrName}`);
+            }
+        }
+        
+        // Combine all parts
+        const allParts = [...statParts, ...attributeParts];
+        if (allParts.length > 0) {
+            text += ` (${allParts.join(', ')})`;
+        }
+        
+        return text;
+    }
 
         // Helper function to split and format multi-item entries
 function formatMultiItemEntry(entry) {
