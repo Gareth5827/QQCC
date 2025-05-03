@@ -63,6 +63,58 @@
         h1, h2 {
             color: #333;
         }
+
+        /* New styles for the manager section */
+        .manager-section {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .manager-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .manager-input {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        .manager-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .manager-button {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .manager-button:hover {
+            background-color: #45a049;
+        }
+
+        .manager-toggles {
+            display: flex;
+            gap: 10px;
+        }
+
+        .stats-attributes-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
     </style>
 </head>
 <body>
@@ -106,33 +158,58 @@
         </div>
     </div>
     
-    <!-- Stats display -->
-    <h2>Stats</h2>
-    <div class="stats-container">
+    <!-- Stats and Attributes container -->
+    <div class="stats-attributes-container">
+        <!-- Stats display -->
         <div>
-            <div class="stat-box" id="endStat">END: 0</div>
-            <div class="stat-box" id="insStat">INS: 0</div>
-            <div class="stat-box" id="witStat">WIT: 0</div>
+            <h2>Stats</h2>
+            <div class="stats-container">
+                <div>
+                    <div class="stat-box" id="endStat">END: 0</div>
+                    <div class="stat-box" id="insStat">INS: 0</div>
+                    <div class="stat-box" id="witStat">WIT: 0</div>
+                </div>
+                <div>
+                    <div class="stat-box" id="allStat">ALL: 0</div>
+                    <div class="stat-box" id="agiStat">AGI: 0</div>
+                    <div class="stat-box" id="pwrStat">PWR: 0</div>
+                </div>
+            </div>
+            
+            <!-- Attributes display -->
+            <h2>Attributes</h2>
+            <div class="stats-container">
+                <div>
+                    <div class="stat-box" id="healthStat">Health: 0 / 0</div>
+                    <div class="stat-box" id="manaStat">Mana: 0 / 0</div>
+                    <div class="stat-box" id="manaRegenStat">Mana Regen: 0</div>
+                </div>
+                <div>
+                    <div class="stat-box" id="spiritStat">Spirit: 0</div>
+                    <div class="stat-box" id="swiftnessStat">Swiftness: 0</div>
+                    <div class="stat-box" id="advantageStat">Advantage: 0</div>
+                </div>
+            </div>
         </div>
-        <div>
-            <div class="stat-box" id="agiStat">AGI: 0</div>
-            <div class="stat-box" id="allStat">ALL: 0</div>
-            <div class="stat-box" id="pwrStat">PWR: 0</div>
-        </div>
-    </div>
-    
-    <!-- Attributes display -->
-    <h2>Attributes</h2>
-    <div class="stats-container">
-        <div>
-            <div class="stat-box" id="healthStat">Health: 23</div>
-            <div class="stat-box" id="manaStat">Mana: 20</div>
-            <div class="stat-box" id="manaRegenStat">Mana Regen: 7</div>
-        </div>
-        <div>
-            <div class="stat-box" id="swiftnessStat">Swiftness: 10</div>
-            <div class="stat-box" id="spiritStat">Spirit: 10</div>
-            <div class="stat-box" id="advantageStat">Advantage: 0</div>
+        
+        <!-- Manager Section -->
+        <div class="manager-section">
+            <h2>Resource Manager</h2>
+            <div class="manager-controls">
+                <input type="number" class="manager-input" id="resourceInput" min="0" value="0">
+                <div class="manager-buttons">
+                    <button class="manager-button" id="gainButton">gain</button>
+                    <button class="manager-button" id="loseButton">lose</button>
+                </div>
+            </div>
+            <div class="manager-toggles">
+                <label>
+                    <input type="radio" name="resourceType" id="healthToggle" checked> Health
+                </label>
+                <label>
+                    <input type="radio" name="resourceType" id="manaToggle"> Mana
+                </label>
+            </div>
         </div>
     </div>
 
@@ -160,490 +237,496 @@
         // Current attribute values (start with base)
         let attributes = JSON.parse(JSON.stringify(baseAttributes));
         
+        // Current and max health/mana values
+        let currentHealth = 0;
+        let maxHealth = 0;
+        let currentMana = 0;
+        let maxMana = 0;
+        
         // Lists of items, weapons, spells, etc.
-const weaponList = [
-    // 10
-    "Snakeskin Whip: (Weapon) [Attack] [Enemy] [15 FT] Deal 1D6 + (AGI mod) damage [2 TP]",
-    // 11-12
-    "", "",
-    // 13
-    "Water amulet: (Weapon) [Self] Force all units within a 10 foot range to make an END roll against you, any unit that fails is knocked outside of the range [2 TP]",
-    // 14
-    "Angel sword: (Weapon) [Attack] [Enemy] [10 FT] Deal 1D8 + (PWR mod) damage [2 TP]",
-    // 15
-    "Hell blade: (Weapon) [Spell] [Enemy] [10 FT] Deal 1D6 + (WIT mod) Fire damage [2 TP]",
-    // 16
-    "Angel staff: (Weapon) [Spell] [Enemy] [15 FT] Deal 1D6 + (END mod) Magic damage [2 TP]  Angel palm: (Weapon) [Light] [Spell] [Enemy] [15 FT] Inflict Blind 2 [2 TP] {you may use Angel palm to make light}",
-    // 17
-    "",
-    // 18
-    "Wyverns nail: (Weapon) [Spell] [Enemy] [10 FT] Deal 1D6 + (AGI mod) Magic damage [2 TP]",
-    // 19
-    "",
-    // 20
-    "Archmage's staff: (Weapon) [Spell] [Enemy] [15 FT] Deal 2 + (INS mod) Magic damage [2 TP]",
-    // 21-22
-    "", "",
-    // 23
-    "Golden broadsword: (Weapon) [Attack] [Enemy] [10 FT] Deal 1D10 + (PWR mod) [2 TP]   Rampagers Javelin: (Weapon) [Attack] [Enemy] [20 FT] Deal 1D6 + (END mod) [3 TP]",
-    // 24-25
-    "", "",
-    // 26
-    "Burning scimitar: (Weapon) [Spell] [Enemy] [10 FT] Target takes (INS + WIT mod) fire damage [1 TP]",
-    // 27
-    "",
-    // 28
-    "Imps trident: (Weapon) [Attack] [Enemy] [10 FT] Deal 2 + (PWR mod) damage [1 TP]",
-    // 29
-    "Mace of the serpent: (Weapon) [Water] [Spell] [Enemy] [10 FT] Deal 1D12 + (WIT mod) magic damage [3 TP] {you may cast this to make water}   Dagger of the sunken: (Weapon) [Spell] [Enemy] [10 FT] Deal 1D6 + (AGI mod) magic damage [2 TP]",
-    // 30-31
-    "", "",
-    // 32
-    "Stone warhammer (Weapon) [Attack] [Enemy] [15 FT] Deal 4D4 + (END mod) damage [4 TP]",
-    // 33
-    "Soul reaver: (Weapon) [Spell] [Enemy] [10 FT] Deal 1D10 + (WIT mod) magic damage [2 TP]",
-    // 34
-    "Molten lace: (Weapon) [Attack] [Enemy] [15 FT] Deal 1D4 + (ALL mod) fire damage [1 TP]",
-    // 35
-    "Claymore: (Weapon) [Attack] [Enemy] [10 FT] Deal 1D6 + 4 [2 TP]",
-    // 36-37
-    "", "",
-    // 38
-    "Flail: (Weapon) [Attack] [Enemy] [10 FT] Deal 1D10 damage",
-    // 39
-    "Beheading axe: (Weapon) [Attack] [Enemy] [10 FT] Deal 1D6 + (PWR mod) damage [2 TP]",
-    // 40
-    "Lighting staff: (Weapon) [Spell] [Enemy] [15 FT] Deal 2 + (END + INS mod) magic damage, if there is an enemy unit within a 10 ft range of the target, they take equal damage [2 TP]",
-    // 41
-    "Dark priests staff: (Weapon) [Spell] [Enemy] [15 FT] Deal (WIT mod) Magic damage for every debuff the target has [1 TP]",
-    // 42
-    "Fury gauntlet: (Weapon) [Attack] [Enemy] [10 FT] Make two attack rolls, any that hit deal 1D4 + (PWR mod) damage [4 TP]",
-    // 43
-    "Cultists dagger: (Weapon) [Attack] [Enemy] [5 FT] Deal 5 + (AGI mod) damage [1 TP]   Cultists crossbow: (Weapon) [Attack] [Enemy] [20 FT] Deal 1D6 + (AGI mod) [2 TP]",
-    // 44-46
-    "", "", "",
-    // 47
-    "Charred quarterstaff: (Weapon) [Fire] [Attack] [Enemy] [10 FT] Deal 1D4 + (PWR mod) fire damage [2 TP] {you may cast this to make fire}   Jungle spear: (Weapon) [Poison] [Attack] [Enemy] [10 FT] Deal 1D4 + (AGI mod) poison damage [2 TP] {you may cast this to make poison}   Oceanbound flail: (Weapon) [Water] [Attack] [Enemy] [10 FT] Deal 1D4 + (ALL mod) magic damage [2 TP] {you may cast this to make water}",
-    // 48
-    "",
-    // 49
-    "Graveborn scythe: (Weapon) [Attack] [Enemy] [10 FT] Deal 2 + (PWR mod) dark damage [2 TP]   Graveborn staff: (Weapon) [Spell] [Enemy] [10 FT] Deal 1D6 + (INS mod) magic damage [2 TP]",
-    // 50-51
-    "", "",
-    // 52
-    "Wartorn staff: (Weapon) [Spell] [Enemy] [15 FT] Deal 1D6 + 3 magic damage [2 TP]",
-    // 53
-    "Warhammer: (Weapon) [Attack] [Enemy] [10 FT] Deal 2D6 + (END mod) damage [3 TP]",
-    // 54
-    "",
-    // 55
-    "Holy staff: (Weapon) [Spell] [Ally] [15 FT] Target is healed 1D8 + (ALL mod) Health [2 TP]",
-    // 56
-    "Battleaxe: (Weapon) [Attack] [Enemy] [10 FT] Deal 1D6 + 5 damage",
-    // 57
-    "Spirit blade: (Weapon) [Spell] [Enemy] [15 FT] Deal 1D12 + (INS mod) dark damage [2 TP, 6 Health]",
-    // 58
-    "",
-    // 59
-    "Great crossbow: (Weapon) [Attack] [Enemy] [30 FT] Deal 1D8 + (AGI mod) [2 TP]",
-    // 60-69
-    "Ritual spear: (Weapon) [Attack] [Enemy] [15 FT] Deal 1D6 + (INS mod) magic damage [1 TP]",
-    "Dragon axe: (Weapon) [Attack] [Enemy] [15 FT] Deal 1D10 + (PWR mod) damage [3 TP]",
-    "Hunters bow: (Weapon) [Attack] [Enemy] [10 - 25 FT] Deal 1D8 + (AGI mod) damage [2 TP]",
-    "", "", "",
-    "Sight slicer: (Weapon) [Spell] [Enemies] [10 FT] Deal 1D6 + (INS mod) damage and inflict Blind 4 [2 TP]",
-    "", "",
-    "Bone shatterer: (Weapon) [Attack] [Enemy] [10 FT]: Deal 3D4 + (PWR mod) damage [3 TP]   Cursed katana: (Weapon) [Attack] [Enemy] [10 FT]: Deal 1D4 + (AGI and ALL mod) magic damage [3 TP]"
-];
+        const weaponList = [
+            // 10
+            "Snakeskin Whip: (Weapon) [Attack] [Enemy] [15 FT] Deal 1D6 + (AGI mod) damage [2 TP]",
+            // 11-12
+            "", "",
+            // 13
+            "Water amulet: (Weapon) [Self] Force all units within a 10 foot range to make an END roll against you, any unit that fails is knocked outside of the range [2 TP]",
+            // 14
+            "Angel sword: (Weapon) [Attack] [Enemy] [10 FT] Deal 1D8 + (PWR mod) damage [2 TP]",
+            // 15
+            "Hell blade: (Weapon) [Spell] [Enemy] [10 FT] Deal 1D6 + (WIT mod) Fire damage [2 TP]",
+            // 16
+            "Angel staff: (Weapon) [Spell] [Enemy] [15 FT] Deal 1D6 + (END mod) Magic damage [2 TP]  Angel palm: (Weapon) [Light] [Spell] [Enemy] [15 FT] Inflict Blind 2 [2 TP] {you may use Angel palm to make light}",
+            // 17
+            "",
+            // 18
+            "Wyverns nail: (Weapon) [Spell] [Enemy] [10 FT] Deal 1D6 + (AGI mod) Magic damage [2 TP]",
+            // 19
+            "",
+            // 20
+            "Archmage's staff: (Weapon) [Spell] [Enemy] [15 FT] Deal 2 + (INS mod) Magic damage [2 TP]",
+            // 21-22
+            "", "",
+            // 23
+            "Golden broadsword: (Weapon) [Attack] [Enemy] [10 FT] Deal 1D10 + (PWR mod) [2 TP]   Rampagers Javelin: (Weapon) [Attack] [Enemy] [20 FT] Deal 1D6 + (END mod) [3 TP]",
+            // 24-25
+            "", "",
+            // 26
+            "Burning scimitar: (Weapon) [Spell] [Enemy] [10 FT] Target takes (INS + WIT mod) fire damage [1 TP]",
+            // 27
+            "",
+            // 28
+            "Imps trident: (Weapon) [Attack] [Enemy] [10 FT] Deal 2 + (PWR mod) damage [1 TP]",
+            // 29
+            "Mace of the serpent: (Weapon) [Water] [Spell] [Enemy] [10 FT] Deal 1D12 + (WIT mod) magic damage [3 TP] {you may cast this to make water}   Dagger of the sunken: (Weapon) [Spell] [Enemy] [10 FT] Deal 1D6 + (AGI mod) magic damage [2 TP]",
+            // 30-31
+            "", "",
+            // 32
+            "Stone warhammer (Weapon) [Attack] [Enemy] [15 FT] Deal 4D4 + (END mod) damage [4 TP]",
+            // 33
+            "Soul reaver: (Weapon) [Spell] [Enemy] [10 FT] Deal 1D10 + (WIT mod) magic damage [2 TP]",
+            // 34
+            "Molten lace: (Weapon) [Attack] [Enemy] [15 FT] Deal 1D4 + (ALL mod) fire damage [1 TP]",
+            // 35
+            "Claymore: (Weapon) [Attack] [Enemy] [10 FT] Deal 1D6 + 4 [2 TP]",
+            // 36-37
+            "", "",
+            // 38
+            "Flail: (Weapon) [Attack] [Enemy] [10 FT] Deal 1D10 damage",
+            // 39
+            "Beheading axe: (Weapon) [Attack] [Enemy] [10 FT] Deal 1D6 + (PWR mod) damage [2 TP]",
+            // 40
+            "Lighting staff: (Weapon) [Spell] [Enemy] [15 FT] Deal 2 + (END + INS mod) magic damage, if there is an enemy unit within a 10 ft range of the target, they take equal damage [2 TP]",
+            // 41
+            "Dark priests staff: (Weapon) [Spell] [Enemy] [15 FT] Deal (WIT mod) Magic damage for every debuff the target has [1 TP]",
+            // 42
+            "Fury gauntlet: (Weapon) [Attack] [Enemy] [10 FT] Make two attack rolls, any that hit deal 1D4 + (PWR mod) damage [4 TP]",
+            // 43
+            "Cultists dagger: (Weapon) [Attack] [Enemy] [5 FT] Deal 5 + (AGI mod) damage [1 TP]   Cultists crossbow: (Weapon) [Attack] [Enemy] [20 FT] Deal 1D6 + (AGI mod) [2 TP]",
+            // 44-46
+            "", "", "",
+            // 47
+            "Charred quarterstaff: (Weapon) [Fire] [Attack] [Enemy] [10 FT] Deal 1D4 + (PWR mod) fire damage [2 TP] {you may cast this to make fire}   Jungle spear: (Weapon) [Poison] [Attack] [Enemy] [10 FT] Deal 1D4 + (AGI mod) poison damage [2 TP] {you may cast this to make poison}   Oceanbound flail: (Weapon) [Water] [Attack] [Enemy] [10 FT] Deal 1D4 + (ALL mod) magic damage [2 TP] {you may cast this to make water}",
+            // 48
+            "",
+            // 49
+            "Graveborn scythe: (Weapon) [Attack] [Enemy] [10 FT] Deal 2 + (PWR mod) dark damage [2 TP]   Graveborn staff: (Weapon) [Spell] [Enemy] [10 FT] Deal 1D6 + (INS mod) magic damage [2 TP]",
+            // 50-51
+            "", "",
+            // 52
+            "Wartorn staff: (Weapon) [Spell] [Enemy] [15 FT] Deal 1D6 + 3 magic damage [2 TP]",
+            // 53
+            "Warhammer: (Weapon) [Attack] [Enemy] [10 FT] Deal 2D6 + (END mod) damage [3 TP]",
+            // 54
+            "",
+            // 55
+            "Holy staff: (Weapon) [Spell] [Ally] [15 FT] Target is healed 1D8 + (ALL mod) Health [2 TP]",
+            // 56
+            "Battleaxe: (Weapon) [Attack] [Enemy] [10 FT] Deal 1D6 + 5 damage",
+            // 57
+            "Spirit blade: (Weapon) [Spell] [Enemy] [15 FT] Deal 1D12 + (INS mod) dark damage [2 TP, 6 Health]",
+            // 58
+            "",
+            // 59
+            "Great crossbow: (Weapon) [Attack] [Enemy] [30 FT] Deal 1D8 + (AGI mod) [2 TP]",
+            // 60-69
+            "Ritual spear: (Weapon) [Attack] [Enemy] [15 FT] Deal 1D6 + (INS mod) magic damage [1 TP]",
+            "Dragon axe: (Weapon) [Attack] [Enemy] [15 FT] Deal 1D10 + (PWR mod) damage [3 TP]",
+            "Hunters bow: (Weapon) [Attack] [Enemy] [10 - 25 FT] Deal 1D8 + (AGI mod) damage [2 TP]",
+            "", "", "",
+            "Sight slicer: (Weapon) [Spell] [Enemies] [10 FT] Deal 1D6 + (INS mod) damage and inflict Blind 4 [2 TP]",
+            "", "",
+            "Bone shatterer: (Weapon) [Attack] [Enemy] [10 FT]: Deal 3D4 + (PWR mod) damage [3 TP]   Cursed katana: (Weapon) [Attack] [Enemy] [10 FT]: Deal 1D4 + (AGI and ALL mod) magic damage [3 TP]"
+        ];
         
-const spellList = [
-    // 10
-    "Volcanic Eruption: [Fire] [Spell] [Enemy] [20 FT] Deal 1D10 + (WIT mod) Fire damage to all enemies within a 10 ft area [3 TP, 6 Mana] {you may ignite something for 4 Mana}   Spark: [Spell] [Enemy] [10 FT] Deal 1D4 + (INS mod) Magic damage, you may spend 4 Mana to deal Fire damage instead [2 TP]",
-    // 11
-    "Aquatic blessing: [Water] [Spell] [Ally] [20 FT] Grant target +5 speed and +3 Magic damage on all [Attack] actions [2 TP, 8 Mana] {you may cast this to make water for 4 Mana}   Tidebreaker: [Water] [Spell] [Ally] [15 FT] Target gets healed by 2 + (your INS mod) and gets moved 10 feet in any direction [2 TP, 7 Mana]",
-    // 12
-    "Blowdart: [Poison] [Attack] [Enemy] [20 FT] [Poison] Deal 2 + (AGI mod) [2 TP] {you may Poison something}",
-    // 13
-    "Tsunami: [Water] [Spell] Target a 15 foot wide and 20 foot long area in a direction, all units inside the range need to make an END roll against you, if they fail they are knocked to the end of the area [3 TP, 3 Mana] {you may cast this to make water}  Abyssal claw: [Spell] Deal 1D4 + (END mod) magic damage [1 TP, 4 Mana]",
-    // 14
-    "Flintlock pouch: [Fire] [Attack] [Enemy] [10 FT] Once per turn, target an enemy in range, they are Burning [2 TP] OR [4 Mana] {you may cast this to make fire for 4 mana}",
-    // 15
-    "Demonic extinguish: [Spell] [Enemy] [20 FT] Target a burning enemy within range, they are no longer burning and take 1D8 + (WIT mod) Magic damage [2 TP, 4 Mana]",
-    // 16
-    "Sunbeam: [Spell] [All] [20 FT] Target takes 1D6 + (INS mod) Magic damage and has Blind 1 applied. If they are an ally, heal them for (their INS mod (min 1))[2 TP, 6 Mana]",
-    // 17
-    "Dragonscale potion: Once per turn the next [Attack] you take deals 1 damage [1 TP] OR [3 Mana]",
-    // 18
-    "",
-    // 19
-    "Stone wall: [Terrain] make a 5 foot long and 15 foot wide stone wall that has 20 Health. It lasts for the round. Any ally within a 10 ft range can spend 2 TP to climb it, if so they are on High ground [3 TP, 4 Mana] {you may cast this to make terrain for 2 Mana}   Boulder toss: [Attack] [Enemy] [20 FT] Deal 1D8 + (END mod) damage [2 TP, 6 Mana]",
-    // 20
-    "Arcane bolt: [Spell] [Enemy] [20 FT] Deal 1D12 + (INS mod) Magic damage [2 TP, 12 Mana] OR [3 TP, 7 Mana]",
-    // 21
-    "Ray of sunshine: [Light] All units within a 10 foot area around you must make an INS roll against you, any unit that fails has Blind 3 and takes 1D6 + (INS mod) magic damage [2 TP, 12 Mana] OR [3 TP, 7 Mana] {you may cast this to make light for 5 Mana}   Holy ray: [Spell] [Ally] [15 FT] Target is healed by 2 + (ALL mod) and gains an (INS mod) shield [2 TP, 6 Mana]   Empower: [Spell] [Ally] [15 FT] Target gains +1 to hit and +2 + (WIT mod) damage on their next (Weapon) action [2 TP, 4 Mana]",
-    // 22
-    "Petrifying gaze: [Spell] [Enemy] [20 FT] Target is slowed by 10 ft and takes (ALL mod) magic damage for every [Spell] that hits them [2 TP, 10 Mana]   Energy syphon: [Spell] [Enemy] [15 FT] Target takes 2 + (ALL mod) magic damage, you heal for the damage dealt",
-    // 23
-    "",
-    // 24
-    "Thunderbolt: [Spell] [Enemy] [25 FT] Deal 1D8 + (INS mod) magic damage, if there's another enemy in a 10 foot range of the target, they take 1D6 magic damage [2 TP, 6 Mana]   Thunderstorm: [30 FT] Target a 10 x 10 ft area that's considered Slippery until the start of your next turn. Also target one enemy inside the area to take 1D6 + (INS mod) magic damage [2 TP, 8 Mana]   Fierce gust: [Spell] [Enemy] [20 FT] Target gets pushed 10 ft away from you and must make an END roll against you, they are knocked prone on fail [2 TP, 6 Mana]",
-    // 25
-    "Drown: [Water] [Spell] [Enemy] [20 FT] Make the spell roll with a -2, if it hits deal 3D4 + (INS mod) magic damage [2 TP, 10 Mana] {you may cast this make water for 5 Mana}   Water barrier: [Self] Gain +2 Swiftness and a 4 Health shield this turn [2 TP, 6 Mana]",
-    // 26
-    "Underworld curse: [Fire] [Spell] [Enemy] [30 FT] Target takes 3 + (WIT mod) fire damage for every non movement action they use on their turn [2 TP, 8 Mana] {you may cast this to make fire for 4 mana}   Infernal shield: [Spell] [All] [20 FT] Target takes 3 + (WIT mod) fire damage but gains +4 Swiftness until the end of their next turn [2 TP, 6 Mana]",
-    // 27-28
-    "", "",
-    // 29
-    "Aquatic chains: [Water] [Spell] [Enemy] [20 FT] Target makes an AGI roll against you, on fail they cannot move on their turn and take 1D6 + (WIT mod) magic damage [2 TP, 8 Mana]",
-    // 30
-    "Noxious gale: [Poison] [Spell] Force all units within a 15 foot range to make an INS roll against you, any that fail take 1D6 + (INS mod) poison damage, any that pass are moved outside of the area [3 TP, 10 Mana] {you may cast this to make poison}   Mystic fang: [Spell] [Enemy] [30 FT] Target takes 1D6 + (INS mod) poison damage [2 TP, 5 Mana]",
-    // 31
-    "Curse of the wartorn: [Spell] [Enemy] [20 FT] If the target attacks or casts an ability on their turn, they take 2D6 + (INS mod) dark damage [2 TP, 8 Mana]   Spirit shred: [Spell] [Enemy] [20 FT] Targets Spirits is reduced by 3 until the end of their next turn [2 TP, 6 Mana]   Aura of insanity: [Self] Force all units within a 15 FT range to make an INS roll against you, any that fail take 1D6 + (INS mod) dark damage and have a -2 to hit until the end of their turn [2 TP, 8 Mana]",
-    // 32
-    "Blessing of the mountain: [Spell] [Ally] [20 FT] Target is slowed by 10 speed, but gains an additional 2D4 damage on their next (Weapon) action (does not stack) [2 TP, 6 Mana]   Stone pillar: [Terrain] [15 FT] Target a 5 foot area within range, a stone pillar is maked on it. The stone pillar has 40 Health. It lasts for the round. Any unit within a 10 ft range can spend 2 TP to climb it, if so they are on High ground [2 TP, 6 Mana] {you may cast this to make terrain for 3 Mana}",
-    // 33
-    "Hail amulet: [Spell] [Enemy] [15 FT] Once per turn, you may target an enemy in range and deal 1D6 magic damage and force them to make a WIT roll against you, they are Paralyzed on fail [1 TP]",
-    // 34
-    "Sun in a bottle: [Light] Once per turn, throw the bottle on the ground inflicting Stun 1 to all units within a 10 foot range [5 Mana] {you may cast this to make light for 5 Mana}",
-    // 35
-    "Wrath of the holy: [Attack] [Enemy] [15 FT] [Light] Deal 1D6 + (INS mod) magic damage and inflict Stun 1 [2 TP, 7 Mana] {you may cast this to make light for 2 Mana}",
-    // 36
-    "Infernal scream: [Fire] Force all units within a 10 foot range to make an END roll against you, any unit that fails is knocked 10 ft back and takes 1D6 + (WIT mod) Fire damage [2 TP, 5 Mana] {you may cast this to make fire}   Hellish charge: Target a 5 ft wide and 15 ft long area in any direction. All units in that area must make an END roll against you, if they fail they are knocked prone and take (END mod) damage [2 TP, 7 Mana]",
-    // 37
-    "Sinister orb: [Spell] [Enemy] [20 FT] If the target is debuffed they take 2D6 + (END mod) magic damage [2 TP, 6 Mana]",
-    // 38
-    "Wilder shape: [Self] Heal 4 Health and gain +2 to all rolls until the end of your next turn [1 TP, 10 Mana]   Poison touch: [Poison] [Attack] [Enemy] [10 FT] Target takes 1D6 + (PWR mod) poison damage [2 TP]",
-    // 39
-    "Honed strike: [Self] Gain +2 to hit and deal +5 damage on your next (Weapon) action [2 TP, 5 Mana]",
-    // 40
-    "Thunderform: [Self] Gain -4 to hit, but +3 Swiftness +3 Spirit until the start of your next turn, and deal 1D10 magic damage to the closest enemy in a 15 ft range [2 TP, 8 Mana]  Thundercloud: make a thundercloud that gives you high ground until the start of your next turn. The next enemy to use an action against you fails and takes 1D4 + (INS mod) magic damage [2 TP, 8 Mana]",
-    // 41
-    "Sinister blessing: [Spell] [All] [30 FT] Target takes 1D4 magic damage and is Burning, but gains +(WIT mod) hit until the end of their turn (does not stack) [2 TP, 8 Mana]   Soul rip: [Spell] [All] [30 FT] Target is healed by 1D10 + (WIT mod) health, but is Nearsighted [2 TP, 8 Mana]",
-    // 42
-    "Fierce tackle: [Attack] [Enemy] [20 FT] Move to the targets position dealing 1D6 + (PWR mod) damage, they make a PWR roll against you, on fail are knocked prone [2 TP, 6 Mana]",
-    // 43
-    "",
-    // 44
-    "Righteous shove: [Attack] [Enemy] [15 FT] Force the target to make a PWR roll against you. On fail they are knocked prone and take 1D6 + (PWR mod) damage, on critical strike they are Paralyzed [2 TP, 5 Mana]   Toss: [Attack] [All] [10 FT] Target makes a PWR roll against you, on fail, they are thrown to a new location in a 20 ft range and take 1D6 - (their END mod) [2 TP, 5 Mana]   Headbutt: [Attack] [Enemy] [10 FT] Target takes 1D10 + (END mod) damage, and must make an END roll against you, on fail they are knocked prone [2 TP, 5 Mana]",
-    // 45
-    "Lightning bomb: [Spell] [Enemy] [20 FT] Deal 1D6 + (WIT mod) magic damage and debuff the target. At the end of your turn they take 1D6 + (WIT mod) magic damage if the target is within 10 ft of another enemy, it takes equal damage [2 TP, 5 Mana]   Mystic push: [Spell] [Enemy] [20 FT] The target makes an INS roll against you, on fail they are moved 10 ft in any direction and take 1D4 + (INS mod) magic damage [2 TP, 7 Mana]",
-    // 46
-    "Plague cloud: [Poison] [Spell] [20 FT] Target a 10 x 10 ft area, all units inside must make an INS roll against you, any that fail take 1D10 + (INS mod) poison damage [2 TP, 10 Mana] {you may cast this to make poison for 3 Mana}",
-    // 47
-    "",
-    // 48
-    "War stance: [Self] All enemy units within a 15 ft range must make an INS save against you, on fail they have -3 PWR until the end of their turn. Also move 10 ft [2 TP, 6 Mana]   Horrific Foresight: [Self] Target an enemy, you gain +3 to hit against them until the end of this turn (does not stack) [1 TP, 4 Mana]",
-    // 49
-    "Helping horror: [Spell] [Enemy] [20 FT] Target gets knocked prone, takes (INS mod) magic damage, and you move 10 ft [2 TP, 7 Mana]",
-    // 50
-    "Energy transfer [Spell] [Allies] [15 ft] Transfer 5 Mana to heal an ally by 7 Health [2 TP, 5 Mana]",
-    // 51
-    "Wildpool: [Water] [Spell] [Ally] [20 FT] Target has a special buff on them, when your turn ends, all units within a 10 ft range of the target are knocked 10 ft back [2 TP, 7 Mana] {you may cast this to make water}   Waveblade: [Spell] [Ally] [Self] [20 FT] Target gets a buff, the next (Weapon) action they do has an additional +1 to hit and deals +4 magic damage [2 TP, 4 Mana]",
-    // 52
-    "Warpath: [Spell] [Enemy] [20 FT] Target is slowed by 10 ft and takes 4 dark damage whenever they are hit by a (Weapon) action until the end of their turn [2 TP, 7 Mana]   Essence prison: [Spell] [Enemy] [20 FT] Target is debuffed, if they move on their turn, they take 1D10 + (INS mod) dark damage [1 TP, 15 Mana]",
-    // 53
-    "Tremor: [Self] Target a 5 foot wide and 25 foot long area in any direction, all units in that area must make an END roll against you, any that fail are knocked prone and take 1D10 + (END mod) damage [3 TP, 14 Mana]",
-    // 54
-    "Freezing tomb: [Spell] [Enemy] [25 FT] Target must make an INS roll against you, if they fail, they take 1D10 + (INS mod) magic damage and cannot move until the end of their turn [2 TP, 10 Mana]   Icicle: [Spell] [Enemy] [15 FT] Target takes 1D4 + (INS mod) magic damage [1 TP, 3 Mana]",
-    // 55
-    "Holy light: [Light] [Spell] [20 FT] Target a 10 x 10 ft area, all units in that area must make an INS and END roll against you. Any unit that fails the INS roll takes 1D8 magic damage and any unit that fails the END roll gets moved out of the area. Any allies inside the area are healed by 1D4 + (your END mod) Health [2 TP, 7 Mana] {you may cast this to make light for 2 Mana}",
-    // 56
-    "Draconic voice: Target a 5 foot wide and 20 foot long area, all units inside that area must make an END roll against you, failing units are knocked prone and 10 ft back [2 TP, 9 Mana]   Royal charge: All allies within a 10 ft range gain +10 speed and +1 Swiftness until the end of their turn [2 TP, 8 Mana]",
-    // 57
-    "Rite of torment: [Spell] [Enemy] [30 FT] Target must make an INS roll against you, if they fail, the are Nearsighted and have Dread [2 TP, 8 Mana]   Spirit rot: [Spell] [Enemy] [20 FT] Steal 1D8 Mana from the target and force them to make an INS roll against you, if they fail they take 1D10 magic damage [2 TP, 6 Mana]",
-    // 58
-    "Steel arrow: [Attack] [Enemy] [20 FT] Deal 1D4 + (AGI mod) damage [1 TP, 4 Mana]",
-    // 59
-    "Volley: [25 FT] Target a 10 x 10 ft area within range, all units in the area must make an AGI roll against you, any unit that fails takes (AGI mod) damage [2 TP, 7 Mana]",
-    // 60-69
-    "Spear sweep: Force all units within a 10 ft range to make an AGI roll against you, any unit that fails takes 2D6 + (INS mod) magic damage [2 TP, 7 Mana]   Spirit form: [Self] Remove all debuffs and move 10 ft in any direction [1 TP, 10 Mana]",
-    "Leap: Move 20 ft in any direction [1 TP, 4 Mana]",
-    "Eagle eyes: Increase the range of your next action by 5 ft [1 TP, 4 Mana]",
-    "Dark palm: [Attack] [Enemy] [5 FT] Deal 1D8 + (PWR mod) dark damage and force all units within a 5 ft range to make an END roll against you, failing units take 3 dark damage [2 TP, 3 Mana]   Sinister uppercut: [Attack] [Enemy] [10 FT] Deal 1D8 + (PWR mod) dark damage and force the target to make an AGI roll of 12+, on fail they are knocked prone [2 TP, 4 Mana]   Facebreaker: [Attack] [Enemy] [10 FT] Make 2 attack rolls, for each roll that hits deal 1D6 + (PWR mod) dark damage [4 TP, 6 Mana]",
-    "Mind break: [Spell] [Enemy] [20 FT] Deal 3 * the difference between yours and the targets INS mod as magic damage [3 TP, 10 Mana]   Astral cleanse: [Spell] [Enemy] [20 FT] Remove all buffs the target has and deal 2 magic damage for every buff removed [3 TP, 10 Mana]   Astral spike: [Spell] [Enemy] [15 FT] Deal 1D4 + (INS mod) magic damage [1 TP, 5 Mana]",
-    "Barrier: [Spell] [Self] [Allies] [20 FT] Grant target a 6 Health shield until the end of their turn [2 TP, 2 Mana]   Shatter: [Spell] [Enemy] [20 FT] Target loses all shields and takes 1D4 magic damage [2 TP, 5 Mana]",
-    "",
-    "Sucker punch: [Attack] [Enemy] [10 FT] Deal (PWR mod) damage [1 TP]",
-    "Spark jab: [Spell] [Enemy] [10 FT]: Deal 1D4 + (INS mod) magic damage, target must make an AGI roll against you, on fail they have Blind 2 [1 TP, 4 Mana]   Zip: [Spell] [Enemy] [40 FT]: {can only target Debuffed enemies} Move anywhere within a 5 FT range of the target and deal 1D4 magic damage to them [2 TP, 5 Mana]"
-];
+        const spellList = [
+            // 10
+            "Volcanic Eruption: [Fire] [Spell] [Enemy] [20 FT] Deal 1D10 + (WIT mod) Fire damage to all enemies within a 10 ft area [3 TP, 6 Mana] {you may ignite something for 4 Mana}   Spark: [Spell] [Enemy] [10 FT] Deal 1D4 + (INS mod) Magic damage, you may spend 4 Mana to deal Fire damage instead [2 TP]",
+            // 11
+            "Aquatic blessing: [Water] [Spell] [Ally] [20 FT] Grant target +5 speed and +3 Magic damage on all [Attack] actions [2 TP, 8 Mana] {you may cast this to make water for 4 Mana}   Tidebreaker: [Water] [Spell] [Ally] [15 FT] Target gets healed by 2 + (your INS mod) and gets moved 10 feet in any direction [2 TP, 7 Mana]",
+            // 12
+            "Blowdart: [Poison] [Attack] [Enemy] [20 FT] [Poison] Deal 2 + (AGI mod) [2 TP] {you may Poison something}",
+            // 13
+            "Tsunami: [Water] [Spell] Target a 15 foot wide and 20 foot long area in a direction, all units inside the range need to make an END roll against you, if they fail they are knocked to the end of the area [3 TP, 3 Mana] {you may cast this to make water}  Abyssal claw: [Spell] Deal 1D4 + (END mod) magic damage [1 TP, 4 Mana]",
+            // 14
+            "Flintlock pouch: [Fire] [Attack] [Enemy] [10 FT] Once per turn, target an enemy in range, they are Burning [2 TP] OR [4 Mana] {you may cast this to make fire for 4 mana}",
+            // 15
+            "Demonic extinguish: [Spell] [Enemy] [20 FT] Target a burning enemy within range, they are no longer burning and take 1D8 + (WIT mod) Magic damage [2 TP, 4 Mana]",
+            // 16
+            "Sunbeam: [Spell] [All] [20 FT] Target takes 1D6 + (INS mod) Magic damage and has Blind 1 applied. If they are an ally, heal them for (their INS mod (min 1))[2 TP, 6 Mana]",
+            // 17
+            "Dragonscale potion: Once per turn the next [Attack] you take deals 1 damage [1 TP] OR [3 Mana]",
+            // 18
+            "",
+            // 19
+            "Stone wall: [Terrain] make a 5 foot long and 15 foot wide stone wall that has 20 Health. It lasts for the round. Any ally within a 10 ft range can spend 2 TP to climb it, if so they are on High ground [3 TP, 4 Mana] {you may cast this to make terrain for 2 Mana}   Boulder toss: [Attack] [Enemy] [20 FT] Deal 1D8 + (END mod) damage [2 TP, 6 Mana]",
+            // 20
+            "Arcane bolt: [Spell] [Enemy] [20 FT] Deal 1D12 + (INS mod) Magic damage [2 TP, 12 Mana] OR [3 TP, 7 Mana]",
+            // 21
+            "Ray of sunshine: [Light] All units within a 10 foot area around you must make an INS roll against you, any unit that fails has Blind 3 and takes 1D6 + (INS mod) magic damage [2 TP, 12 Mana] OR [3 TP, 7 Mana] {you may cast this to make light for 5 Mana}   Holy ray: [Spell] [Ally] [15 FT] Target is healed by 2 + (ALL mod) and gains an (INS mod) shield [2 TP, 6 Mana]   Empower: [Spell] [Ally] [15 FT] Target gains +1 to hit and +2 + (WIT mod) damage on their next (Weapon) action [2 TP, 4 Mana]",
+            // 22
+            "Petrifying gaze: [Spell] [Enemy] [20 FT] Target is slowed by 10 ft and takes (ALL mod) magic damage for every [Spell] that hits them [2 TP, 10 Mana]   Energy syphon: [Spell] [Enemy] [15 FT] Target takes 2 + (ALL mod) magic damage, you heal for the damage dealt",
+            // 23
+            "",
+            // 24
+            "Thunderbolt: [Spell] [Enemy] [25 FT] Deal 1D8 + (INS mod) magic damage, if there's another enemy in a 10 foot range of the target, they take 1D6 magic damage [2 TP, 6 Mana]   Thunderstorm: [30 FT] Target a 10 x 10 ft area that's considered Slippery until the start of your next turn. Also target one enemy inside the area to take 1D6 + (INS mod) magic damage [2 TP, 8 Mana]   Fierce gust: [Spell] [Enemy] [20 FT] Target gets pushed 10 ft away from you and must make an END roll against you, they are knocked prone on fail [2 TP, 6 Mana]",
+            // 25
+            "Drown: [Water] [Spell] [Enemy] [20 FT] Make the spell roll with a -2, if it hits deal 3D4 + (INS mod) magic damage [2 TP, 10 Mana] {you may cast this make water for 5 Mana}   Water barrier: [Self] Gain +2 Swiftness and a 4 Health shield this turn [2 TP, 6 Mana]",
+            // 26
+            "Underworld curse: [Fire] [Spell] [Enemy] [30 FT] Target takes 3 + (WIT mod) fire damage for every non movement action they use on their turn [2 TP, 8 Mana] {you may cast this to make fire for 4 mana}   Infernal shield: [Spell] [All] [20 FT] Target takes 3 + (WIT mod) fire damage but gains +4 Swiftness until the end of their next turn [2 TP, 6 Mana]",
+            // 27-28
+            "", "",
+            // 29
+            "Aquatic chains: [Water] [Spell] [Enemy] [20 FT] Target makes an AGI roll against you, on fail they cannot move on their turn and take 1D6 + (WIT mod) magic damage [2 TP, 8 Mana]",
+            // 30
+            "Noxious gale: [Poison] [Spell] Force all units within a 15 foot range to make an INS roll against you, any that fail take 1D6 + (INS mod) poison damage, any that pass are moved outside of the area [3 TP, 10 Mana] {you may cast this to make poison}   Mystic fang: [Spell] [Enemy] [30 FT] Target takes 1D6 + (INS mod) poison damage [2 TP, 5 Mana]",
+            // 31
+            "Curse of the wartorn: [Spell] [Enemy] [20 FT] If the target attacks or casts an ability on their turn, they take 2D6 + (INS mod) dark damage [2 TP, 8 Mana]   Spirit shred: [Spell] [Enemy] [20 FT] Targets Spirits is reduced by 3 until the end of their next turn [2 TP, 6 Mana]   Aura of insanity: [Self] Force all units within a 15 FT range to make an INS roll against you, any that fail take 1D6 + (INS mod) dark damage and have a -2 to hit until the end of their turn [2 TP, 8 Mana]",
+            // 32
+            "Blessing of the mountain: [Spell] [Ally] [20 FT] Target is slowed by 10 speed, but gains an additional 2D4 damage on their next (Weapon) action (does not stack) [2 TP, 6 Mana]   Stone pillar: [Terrain] [15 FT] Target a 5 foot area within range, a stone pillar is maked on it. The stone pillar has 40 Health. It lasts for the round. Any unit within a 10 ft range can spend 2 TP to climb it, if so they are on High ground [2 TP, 6 Mana] {you may cast this to make terrain for 3 Mana}",
+            // 33
+            "Hail amulet: [Spell] [Enemy] [15 FT] Once per turn, you may target an enemy in range and deal 1D6 magic damage and force them to make a WIT roll against you, they are Paralyzed on fail [1 TP]",
+            // 34
+            "Sun in a bottle: [Light] Once per turn, throw the bottle on the ground inflicting Stun 1 to all units within a 10 foot range [5 Mana] {you may cast this to make light for 5 Mana}",
+            // 35
+            "Wrath of the holy: [Attack] [Enemy] [15 FT] [Light] Deal 1D6 + (INS mod) magic damage and inflict Stun 1 [2 TP, 7 Mana] {you may cast this to make light for 2 Mana}",
+            // 36
+            "Infernal scream: [Fire] Force all units within a 10 foot range to make an END roll against you, any unit that fails is knocked 10 ft back and takes 1D6 + (WIT mod) Fire damage [2 TP, 5 Mana] {you may cast this to make fire}   Hellish charge: Target a 5 ft wide and 15 ft long area in any direction. All units in that area must make an END roll against you, if they fail they are knocked prone and take (END mod) damage [2 TP, 7 Mana]",
+            // 37
+            "Sinister orb: [Spell] [Enemy] [20 FT] If the target is debuffed they take 2D6 + (END mod) magic damage [2 TP, 6 Mana]",
+            // 38
+            "Wilder shape: [Self] Heal 4 Health and gain +2 to all rolls until the end of your next turn [1 TP, 10 Mana]   Poison touch: [Poison] [Attack] [Enemy] [10 FT] Target takes 1D6 + (PWR mod) poison damage [2 TP]",
+            // 39
+            "Honed strike: [Self] Gain +2 to hit and deal +5 damage on your next (Weapon) action [2 TP, 5 Mana]",
+            // 40
+            "Thunderform: [Self] Gain -4 to hit, but +3 Swiftness +3 Spirit until the start of your next turn, and deal 1D10 magic damage to the closest enemy in a 15 ft range [2 TP, 8 Mana]  Thundercloud: make a thundercloud that gives you high ground until the start of your next turn. The next enemy to use an action against you fails and takes 1D4 + (INS mod) magic damage [2 TP, 8 Mana]",
+            // 41
+            "Sinister blessing: [Spell] [All] [30 FT] Target takes 1D4 magic damage and is Burning, but gains +(WIT mod) hit until the end of their turn (does not stack) [2 TP, 8 Mana]   Soul rip: [Spell] [All] [30 FT] Target is healed by 1D10 + (WIT mod) health, but is Nearsighted [2 TP, 8 Mana]",
+            // 42
+            "Fierce tackle: [Attack] [Enemy] [20 FT] Move to the targets position dealing 1D6 + (PWR mod) damage, they make a PWR roll against you, on fail are knocked prone [2 TP, 6 Mana]",
+            // 43
+            "",
+            // 44
+            "Righteous shove: [Attack] [Enemy] [15 FT] Force the target to make a PWR roll against you. On fail they are knocked prone and take 1D6 + (PWR mod) damage, on critical strike they are Paralyzed [2 TP, 5 Mana]   Toss: [Attack] [All] [10 FT] Target makes a PWR roll against you, on fail, they are thrown to a new location in a 20 ft range and take 1D6 - (their END mod) [2 TP, 5 Mana]   Headbutt: [Attack] [Enemy] [10 FT] Target takes 1D10 + (END mod) damage, and must make an END roll against you, on fail they are knocked prone [2 TP, 5 Mana]",
+            // 45
+            "Lightning bomb: [Spell] [Enemy] [20 FT] Deal 1D6 + (WIT mod) magic damage and debuff the target. At the end of your turn they take 1D6 + (WIT mod) magic damage if the target is within 10 ft of another enemy, it takes equal damage [2 TP, 5 Mana]   Mystic push: [Spell] [Enemy] [20 FT] The target makes an INS roll against you, on fail they are moved 10 ft in any direction and take 1D4 + (INS mod) magic damage [2 TP, 7 Mana]",
+            // 46
+            "Plague cloud: [Poison] [Spell] [20 FT] Target a 10 x 10 ft area, all units inside must make an INS roll against you, any that fail take 1D10 + (INS mod) poison damage [2 TP, 10 Mana] {you may cast this to make poison for 3 Mana}",
+            // 47
+            "",
+            // 48
+            "War stance: [Self] All enemy units within a 15 ft range must make an INS save against you, on fail they have -3 PWR until the end of their turn. Also move 10 ft [2 TP, 6 Mana]   Horrific Foresight: [Self] Target an enemy, you gain +3 to hit against them until the end of this turn (does not stack) [1 TP, 4 Mana]",
+            // 49
+            "Helping horror: [Spell] [Enemy] [20 FT] Target gets knocked prone, takes (INS mod) magic damage, and you move 10 ft [2 TP, 7 Mana]",
+            // 50
+            "Energy transfer [Spell] [Allies] [15 ft] Transfer 5 Mana to heal an ally by 7 Health [2 TP, 5 Mana]",
+            // 51
+            "Wildpool: [Water] [Spell] [Ally] [20 FT] Target has a special buff on them, when your turn ends, all units within a 10 ft range of the target are knocked 10 ft back [2 TP, 7 Mana] {you may cast this to make water}   Waveblade: [Spell] [Ally] [Self] [20 FT] Target gets a buff, the next (Weapon) action they do has an additional +1 to hit and deals +4 magic damage [2 TP, 4 Mana]",
+            // 52
+            "Warpath: [Spell] [Enemy] [20 FT] Target is slowed by 10 ft and takes 4 dark damage whenever they are hit by a (Weapon) action until the end of their turn [2 TP, 7 Mana]   Essence prison: [Spell] [Enemy] [20 FT] Target is debuffed, if they move on their turn, they take 1D10 + (INS mod) dark damage [1 TP, 15 Mana]",
+            // 53
+            "Tremor: [Self] Target a 5 foot wide and 25 foot long area in any direction, all units in that area must make an END roll against you, any that fail are knocked prone and take 1D10 + (END mod) damage [3 TP, 14 Mana]",
+            // 54
+            "Freezing tomb: [Spell] [Enemy] [25 FT] Target must make an INS roll against you, if they fail, they take 1D10 + (INS mod) magic damage and cannot move until the end of their turn [2 TP, 10 Mana]   Icicle: [Spell] [Enemy] [15 FT] Target takes 1D4 + (INS mod) magic damage [1 TP, 3 Mana]",
+            // 55
+            "Holy light: [Light] [Spell] [20 FT] Target a 10 x 10 ft area, all units in that area must make an INS and END roll against you. Any unit that fails the INS roll takes 1D8 magic damage and any unit that fails the END roll gets moved out of the area. Any allies inside the area are healed by 1D4 + (your END mod) Health [2 TP, 7 Mana] {you may cast this to make light for 2 Mana}",
+            // 56
+            "Draconic voice: Target a 5 foot wide and 20 foot long area, all units inside that area must make an END roll against you, failing units are knocked prone and 10 ft back [2 TP, 9 Mana]   Royal charge: All allies within a 10 ft range gain +10 speed and +1 Swiftness until the end of their turn [2 TP, 8 Mana]",
+            // 57
+            "Rite of torment: [Spell] [Enemy] [30 FT] Target must make an INS roll against you, if they fail, the are Nearsighted and have Dread [2 TP, 8 Mana]   Spirit rot: [Spell] [Enemy] [20 FT] Steal 1D8 Mana from the target and force them to make an INS roll against you, if they fail they take 1D10 magic damage [2 TP, 6 Mana]",
+            // 58
+            "Steel arrow: [Attack] [Enemy] [20 FT] Deal 1D4 + (AGI mod) damage [1 TP, 4 Mana]",
+            // 59
+            "Volley: [25 FT] Target a 10 x 10 ft area within range, all units in the area must make an AGI roll against you, any unit that fails takes (AGI mod) damage [2 TP, 7 Mana]",
+            // 60-69
+            "Spear sweep: Force all units within a 10 ft range to make an AGI roll against you, any unit that fails takes 2D6 + (INS mod) magic damage [2 TP, 7 Mana]   Spirit form: [Self] Remove all debuffs and move 10 ft in any direction [1 TP, 10 Mana]",
+            "Leap: Move 20 ft in any direction [1 TP, 4 Mana]",
+            "Eagle eyes: Increase the range of your next action by 5 ft [1 TP, 4 Mana]",
+            "Dark palm: [Attack] [Enemy] [5 FT] Deal 1D8 + (PWR mod) dark damage and force all units within a 5 ft range to make an END roll against you, failing units take 3 dark damage [2 TP, 3 Mana]   Sinister uppercut: [Attack] [Enemy] [10 FT] Deal 1D8 + (PWR mod) dark damage and force the target to make an AGI roll of 12+, on fail they are knocked prone [2 TP, 4 Mana]   Facebreaker: [Attack] [Enemy] [10 FT] Make 2 attack rolls, for each roll that hits deal 1D6 + (PWR mod) dark damage [4 TP, 6 Mana]",
+            "Mind break: [Spell] [Enemy] [20 FT] Deal 3 * the difference between yours and the targets INS mod as magic damage [3 TP, 10 Mana]   Astral cleanse: [Spell] [Enemy] [20 FT] Remove all buffs the target has and deal 2 magic damage for every buff removed [3 TP, 10 Mana]   Astral spike: [Spell] [Enemy] [15 FT] Deal 1D4 + (INS mod) magic damage [1 TP, 5 Mana]",
+            "Barrier: [Spell] [Self] [Allies] [20 FT] Grant target a 6 Health shield until the end of their turn [2 TP, 2 Mana]   Shatter: [Spell] [Enemy] [20 FT] Target loses all shields and takes 1D4 magic damage [2 TP, 5 Mana]",
+            "",
+            "Sucker punch: [Attack] [Enemy] [10 FT] Deal (PWR mod) damage [1 TP]",
+            "Spark jab: [Spell] [Enemy] [10 FT]: Deal 1D4 + (INS mod) magic damage, target must make an AGI roll against you, on fail they have Blind 2 [1 TP, 4 Mana]   Zip: [Spell] [Enemy] [40 FT]: {can only target Debuffed enemies} Move anywhere within a 5 FT range of the target and deal 1D4 magic damage to them [2 TP, 5 Mana]"
+        ];
         
-const passiveList = [
-    // 10
-    "Hellish Embers: Deal 3 extra Fire damage whenever you deal Fire damage",
-    // 11
-    "Sages charm: Whenever you buff an ally, grant them a 6 Health shield for this round (does not stack)",
-    // 12
-    "Rotting Touch: Inflict Decay on critical strikes",
-    // 13
-    "",
-    // 14
-    "Cull of the charred: +3 to Hit against Burning targets",
-    // 15
-    "Demonic tactics: Burn on critical strikes. Additionally, your first action of a turn has a +2 to hit",
-    // 16
-    "",
-    // 17
-    "Dragonhide: You take 1D4 less damage from [Attacks]   Thorny: When a unit attack hits you, they take 1 + (½ END mod) damage",
-    // 18
-    "Toxin charm: Whenever an enemy unit within a 20 foot range is Poisoned or inflicted with Decay, deal 3 damage to them  Cursed strikes: Whenever you deal deal 8+ Magic damage to a unit, Poison them",
-    // 19
-    "Heavy hitter: Stun 2 on critical strikes",
-    // 20
-    "Arcane mastery: Gain +1 INS for every 10 max mana you have",
-    // 21
-    "",
-    // 22
-    "Cull of the meek: When targeting a Debuffed enemy, gain +2 to Hit",
-    // 23-26
-    "", "", "", "",
-    // 27
-    "Reapers blessing: Landing an [Attack] heals you for 2 Health, Critically striking heals you for 5 Health   Dwarven blood: At the start of your turn, heal 2 health for every 10 health you are missing",
-    // 28
-    "Imps agility: When you get hit by a spell, move 5 feet in any direction   Demonic blood: You take 1D6 less Fire damage",
-    // 29
-    "",
-    // 30
-    "Blessing of the wise: Get a +2 to [Spell] rolls when targeting any unit with less WIT than you",
-    // 31-32
-    "", "",
-    // 33
-    "Arcane ferocity: When you critically strike, deal 1D4 magic damage and 2 dark damage",
-    // 34
-    "Wind god's decree: When you critically strike, knock the target back by 10 feet, additionally you have +2 to hit",
-    // 35-36
-    "", "",
-    // 37
-    "Blinding essence: [Spell]s you cast inflict a debuff that gives the target -1 to hit until the end of their turn",
-    // 38
-    "",
-    // 39
-    "Hunters ferocity: Your critical strikes deal an additional 5 damage, and you get a +2 to hit",
-    // 40-41
-    "", "",
-    // 42
-    "Gladiator: [Attack] rolls deal an additional 2 damage",
-    // 43-44
-    "", "",
-    // 45
-    "Eyes of Edrid: When making INS rolls, you get a +2",
-    // 46
-    "Necrotic: You deal an additional 2 poison damage whenever you deal poison damage",
-    // 47
-    "",
-    // 48
-    "Improvised mastery: While making an unarmed (Weapon) action, gain a +2 to hit",
-    // 49
-    "",
-    // 50
-    "Spirit armour: Whenever you are critically struck, knock back the attacker / caster by 10 feet and take 1D4 less damage. Additionally, if there are 3 or more enemies within a 15 ft range, then you take 1D4 less damage from all sources   Blessing of the damned: When you are inflicted with a debuff, roll 1D20, if you get a 14+, you are no longer affected by the debuff",
-    // 51-52
-    "", "",
-    // 53
-    "Heavy handed: Your (Weapon) and [Attacks] knock the target prone on critical strikes",
-    // 54
-    "Aura of the frigid one: Whenever you deal magic damage to an enemy unit within a 15 ft range, they are slowed by 5 ft until the end of their turn (does not stack)",
-    // 55
-    "Mark of the holy: Whenever you target an ally with an action, they gain a 1D4 + (your END mod) shield",
-    // 56-57
-    "", "",
-    // 58
-    "Hasted: Whenever you hit an enemy, move 5 ft in any direction   Rogue tactics: After moving, your next action has a +2 to hit",
-    // 59
-    "Sharpshot: When dealing damage to an enemy, that enemy must make an AGI roll against you, if they fail and are under 10 health, they die",
-    // 60-61
-    "", "",
-    // 62
-    "Hunters agility: When being attacked, roll 1D20, if you roll a 16+, then the attack misses and you move 5 ft in any direction",
-    // 63-64
-    "", "",
-    // 65
-    "Heightened senses: Allies you shield have a +2 to hit while they are shielded",
-    // 66
-    "Dark pact: Whenever you debuff an enemy you deal 1D6 magic damage to them   Wave or mist: All units within a 10 ft range must make an INS roll against you, any unit that fails has Blind 2",
-    // 67
-    "Bloodthirsty: Rolling an 18+ on [Attacks] is considered a critical strike   Heartseeker: +4 to hit on [Attacks]",
-    // 68
-    "Momentum: After using a movement ability, your next (Weapon) action has a +2 to hit and deals an additional 1D6 magic damage",
-    // 69
-    "Limit break: You can use infinite (Weapon) actions in a turn, but you may only use each (Weapon) action once"
-];
+        const passiveList = [
+            // 10
+            "Hellish Embers: Deal 3 extra Fire damage whenever you deal Fire damage",
+            // 11
+            "Sages charm: Whenever you buff an ally, grant them a 6 Health shield for this round (does not stack)",
+            // 12
+            "Rotting Touch: Inflict Decay on critical strikes",
+            // 13
+            "",
+            // 14
+            "Cull of the charred: +3 to Hit against Burning targets",
+            // 15
+            "Demonic tactics: Burn on critical strikes. Additionally, your first action of a turn has a +2 to hit",
+            // 16
+            "",
+            // 17
+            "Dragonhide: You take 1D4 less damage from [Attacks]   Thorny: When a unit attack hits you, they take 1 + (½ END mod) damage",
+            // 18
+            "Toxin charm: Whenever an enemy unit within a 20 foot range is Poisoned or inflicted with Decay, deal 3 damage to them  Cursed strikes: Whenever you deal deal 8+ Magic damage to a unit, Poison them",
+            // 19
+            "Heavy hitter: Stun 2 on critical strikes",
+            // 20
+            "Arcane mastery: Gain +1 INS for every 10 max mana you have",
+            // 21
+            "",
+            // 22
+            "Cull of the meek: When targeting a Debuffed enemy, gain +2 to Hit",
+            // 23-26
+            "", "", "", "",
+            // 27
+            "Reapers blessing: Landing an [Attack] heals you for 2 Health, Critically striking heals you for 5 Health   Dwarven blood: At the start of your turn, heal 2 health for every 10 health you are missing",
+            // 28
+            "Imps agility: When you get hit by a spell, move 5 feet in any direction   Demonic blood: You take 1D6 less Fire damage",
+            // 29
+            "",
+            // 30
+            "Blessing of the wise: Get a +2 to [Spell] rolls when targeting any unit with less WIT than you",
+            // 31-32
+            "", "",
+            // 33
+            "Arcane ferocity: When you critically strike, deal 1D4 magic damage and 2 dark damage",
+            // 34
+            "Wind god's decree: When you critically strike, knock the target back by 10 feet, additionally you have +2 to hit",
+            // 35-36
+            "", "",
+            // 37
+            "Blinding essence: [Spell]s you cast inflict a debuff that gives the target -1 to hit until the end of their turn",
+            // 38
+            "",
+            // 39
+            "Hunters ferocity: Your critical strikes deal an additional 5 damage, and you get a +2 to hit",
+            // 40-41
+            "", "",
+            // 42
+            "Gladiator: [Attack] rolls deal an additional 2 damage",
+            // 43-44
+            "", "",
+            // 45
+            "Eyes of Edrid: When making INS rolls, you get a +2",
+            // 46
+            "Necrotic: You deal an additional 2 poison damage whenever you deal poison damage",
+            // 47
+            "",
+            // 48
+            "Improvised mastery: While making an unarmed (Weapon) action, gain a +2 to hit",
+            // 49
+            "",
+            // 50
+            "Spirit armour: Whenever you are critically struck, knock back the attacker / caster by 10 feet and take 1D4 less damage. Additionally, if there are 3 or more enemies within a 15 ft range, then you take 1D4 less damage from all sources   Blessing of the damned: When you are inflicted with a debuff, roll 1D20, if you get a 14+, you are no longer affected by the debuff",
+            // 51-52
+            "", "",
+            // 53
+            "Heavy handed: Your (Weapon) and [Attacks] knock the target prone on critical strikes",
+            // 54
+            "Aura of the frigid one: Whenever you deal magic damage to an enemy unit within a 15 ft range, they are slowed by 5 ft until the end of their turn (does not stack)",
+            // 55
+            "Mark of the holy: Whenever you target an ally with an action, they gain a 1D4 + (your END mod) shield",
+            // 56-57
+            "", "",
+            // 58
+            "Hasted: Whenever you hit an enemy, move 5 ft in any direction   Rogue tactics: After moving, your next action has a +2 to hit",
+            // 59
+            "Sharpshot: When dealing damage to an enemy, that enemy must make an AGI roll against you, if they fail and are under 10 health, they die",
+            // 60-61
+            "", "",
+            // 62
+            "Hunters agility: When being attacked, roll 1D20, if you roll a 16+, then the attack misses and you move 5 ft in any direction",
+            // 63-64
+            "", "",
+            // 65
+            "Heightened senses: Allies you shield have a +2 to hit while they are shielded",
+            // 66
+            "Dark pact: Whenever you debuff an enemy you deal 1D6 magic damage to them   Wave or mist: All units within a 10 ft range must make an INS roll against you, any unit that fails has Blind 2",
+            // 67
+            "Bloodthirsty: Rolling an 18+ on [Attacks] is considered a critical strike   Heartseeker: +4 to hit on [Attacks]",
+            // 68
+            "Momentum: After using a movement ability, your next (Weapon) action has a +2 to hit and deals an additional 1D6 magic damage",
+            // 69
+            "Limit break: You can use infinite (Weapon) actions in a turn, but you may only use each (Weapon) action once"
+        ];
         
-const itemList = [
-    { name: "Demonic charm", statEffects: { WIT: 3, INS: 1 }, attributeEffects: { Mana: 4 } },
-    { name: "Aquamancers bracelet", statEffects: { ALL: 2, INS: 1 }, attributeEffects: { Mana: 5 } },
-    { name: "Hunters armlet", statEffects: { AGI: 4, PWR: 2 } },
-    { name: "Seafolk tiara", statEffects: { END: 3, WIT: 2 }, attributeEffects: { Swiftness: 1 } },
-    { name: "Angelic chestplate", statEffects: { END: 3, PWR: 2 }, attributeEffects: { Health: 3 } },
-    { name: "Underworld gemstone", statEffects: { WIT: 2 }, attributeEffects: { Swiftness: 1, Spirit: 1 } },
-    { name: "Cloudstriders charm", statEffects: { END: 2, INS: 2, WIT: 1 }, attributeEffects: { Health: 3 } },
-    { name: "Dragonscale chestplate", statEffects: { END: 4 }, attributeEffects: { Health: 6, Swiftness: -2, Spirit: -2 } },
-    { name: "Draconic cloak", statEffects: { AGI: 2, WIT: 2, ALL: 1 } },
-    { name: "Geomancers chestplate", statEffects: { END: 3, PWR: 1 }, attributeEffects: { Mana: 4, ManaRegen: 1 } },
-    { name: "Archmage's amulet", statEffects: { INS: 4, WIT: 1 }, attributeEffects: { Mana: 5 } },
-    { name: "Holy locket", statEffects: { INS: 2, ALL: 2, WIT: 1 } },
-    { name: "Shamans garb", statEffects: { INS: 2, ALL: 2 }, attributeEffects: { Health: 3, Mana: 3 } },
-    { name: "Rampagers helmet", statEffects: { PWR: 3, AGI: 2, END: 2 } },
-    { name: "Electromancers helmet", statEffects: { INS: 2 }, attributeEffects: { Health: 5, Spirit: 1 } },
-    { name: "Sunken armlet", statEffects: { PWR: 2, INS: 2 }, attributeEffects: { Mana: 5, ManaRegen: 1 } },
-    { name: "Demonic charm", statEffects: { INS: 3, WIT: 3 } },
-    { name: "Warlords leg guards", statEffects: { PWR: 3, END: 2 }, attributeEffects: { Health: 5 } },
-    { name: "Dark omen of protection", statEffects: { END: 4, PWR: 2 } },
-    { name: "Waveskipper boots", statEffects: { AGI: 3, WIT: 2 }, attributeEffects: { Mana: 4 } },
-    { name: "Wizards robe", statEffects: { WIT: 3, INS: 3 }, attributeEffects: { Mana: 5 } },
-    { name: "Shamans warpaint", statEffects: { INS: 2, WIT: 2 }, attributeEffects: { Mana: 8 } },
-    { name: "Dwarven war helm", statEffects: { END: 3, PWR: 2 } },
-    { name: "Priests necklace", statEffects: { INS: 4, WIT: 2, ALL: 2 } },
-    { name: "Dancers armlet", statEffects: { ALL: 3, PWR: 2 } },
-    { name: "Knights armour", statEffects: { PWR: 2, END: 2, INS: 2 }, attributeEffects: { Health: 5 } },
-    { name: "Old gods garb", statEffects: { END: 3, WIT: 3 }, attributeEffects: { Swiftness: 2, Spirit: 1 } },
-    { name: "Dark iron armour", statEffects: { END: 2 }, attributeEffects: { Swiftness: 2, Spirit: 2 } },
-    { name: "Wild armlet", statEffects: { AGI: 3, ALL: 2, PWR: 1 } },
-    { name: "Berzerkers chestplate", statEffects: { PWR: 5 }, attributeEffects: { Health: 5 } },
-    { name: "Raindancers headband", statEffects: { INS: 3, WIT: 2, END: 1 } },
-    { name: "Dark priests crystal eye", statEffects: { WIT: 3 }, attributeEffects: { Mana: 15 } },
-    { name: "Gladiators warpaint", statEffects: { PWR: 3 }, attributeEffects: { Health: 8 } },
-    { name: "Band of Nasmanai", statEffects: { AGI: 3, PWR: 2 }, attributeEffects: { Swiftness: 1 } },
-    { name: "Titan bracelet", statEffects: { END: 3, PWR: 2 }, attributeEffects: { Health: 8 } },
-    { name: "Sacrificers gauntlet", statEffects: { INS: 3 }, attributeEffects: { Spirit: 2 } },
-    { name: "Venomancers hood", statEffects: { END: 3, INS: 3 }, attributeEffects: { Health: 6 } },
-    { name: "Cursed armour", statEffects: { PWR: 5, AGI: 5, ALL: 5, Health: 10 }, attributeEffects: { Swiftness: -8, Spirit: -8 } },
-    { name: "Spiked handwraps", statEffects: { PWR: 3, AGI: 3 }, attributeEffects: { Spirit: 1 } },
-    { name: "Graveborn amulet", statEffects: { PWR: 3, INS: 3 }, attributeEffects: { Mana: 6 } },
-    { name: "Wanderers ring", statEffects: { END: 4, WIT: 1 }, attributeEffects: { Mana: 7 } },
-    { name: "Wise amulet", statEffects: {}, attributeEffects: { Health: 4, Mana: 4, ManaRegen: 1, Spirit: 1 } },
-    { name: "Forbidden crown", statEffects: { INS: 3, WIT: 3 }, attributeEffects: { Spirit: 1 } },
-    { name: "Buried gauntlet", statEffects: { END: 4, PWR: 3 }, attributeEffects: { Swiftness: 2 } },
-    { name: "Tribal garb", statEffects: { INS: 3, WIT: 3 }, attributeEffects: { Spirit: 2, Swiftness: 1 } },
-    { name: "Priests robe", statEffects: { END: 2, INS: 2, WIT: 1 }, attributeEffects: { Mana: 5 } },
-    { name: "Kings cloak", statEffects: {}, attributeEffects: { Mana: 7, Health: 5, Swiftness: 1 } },
-    { name: "Shamans bracelet", statEffects: { INS: 2, WIT: 1 }, attributeEffects: { Mana: 8 } },
-    { name: "Boots of the wicked", statEffects: { PWR: 3, AGI: 1 }, attributeEffects: { Swiftness: 2 } },
-    { name: "Great rogues regalia", statEffects: { AGI: 4, ALL: 3 } },
-    { name: "Armlet of the sacrificed", statEffects: { INS: 3, PWR: 2 } },
-    { name: "Dark iron gauntlets", statEffects: { PWR: 3 }, attributeEffects: { Swiftness: 1 } },
-    { name: "Forest queens crown", statEffects: { AGI: 3, ALL: 2 } },
-    { name: "Dark lords headband", statEffects: { PWR: 2, AGI: 2, ALL: 2 } },
-    { name: "Meteor necklace", statEffects: { INS: 3, WIT: 1 }, attributeEffects: { Mana: 10 } },
-    { name: "Sages robe", statEffects: { INS: 2, WIT: 2 } },
-    { name: "The forbidden lords crystal eye", statEffects: { INS: 4, ALL: 4, AGI: 2 } },
-    { name: "Forgotten handwraps", statEffects: { PWR: 2, AGI: 2, ALL: 2 } },
-    { name: "Stormcallers hood", statEffects: { INS: 2, AGI: 2 }, attributeEffects: { Mana: 4, Spirit: 1 } },
-    { name: "Birthday suit", statEffects: { PWR: 5, AGI: 5, ALL: 5 }, attributeEffects: { Health: 7, Swiftness: -7, Spirit: -7 } }
-];
+        const itemList = [
+            { name: "Demonic charm", statEffects: { WIT: 3, INS: 1 }, attributeEffects: { Mana: 4 } },
+            { name: "Aquamancers bracelet", statEffects: { ALL: 2, INS: 1 }, attributeEffects: { Mana: 5 } },
+            { name: "Hunters armlet", statEffects: { AGI: 4, PWR: 2 } },
+            { name: "Seafolk tiara", statEffects: { END: 3, WIT: 2 }, attributeEffects: { Swiftness: 1 } },
+            { name: "Angelic chestplate", statEffects: { END: 3, PWR: 2 }, attributeEffects: { Health: 3 } },
+            { name: "Underworld gemstone", statEffects: { WIT: 2 }, attributeEffects: { Swiftness: 1, Spirit: 1 } },
+            { name: "Cloudstriders charm", statEffects: { END: 2, INS: 2, WIT: 1 }, attributeEffects: { Health: 3 } },
+            { name: "Dragonscale chestplate", statEffects: { END: 4 }, attributeEffects: { Health: 6, Swiftness: -2, Spirit: -2 } },
+            { name: "Draconic cloak", statEffects: { AGI: 2, WIT: 2, ALL: 1 } },
+            { name: "Geomancers chestplate", statEffects: { END: 3, PWR: 1 }, attributeEffects: { Mana: 4, ManaRegen: 1 } },
+            { name: "Archmage's amulet", statEffects: { INS: 4, WIT: 1 }, attributeEffects: { Mana: 5 } },
+            { name: "Holy locket", statEffects: { INS: 2, ALL: 2, WIT: 1 } },
+            { name: "Shamans garb", statEffects: { INS: 2, ALL: 2 }, attributeEffects: { Health: 3, Mana: 3 } },
+            { name: "Rampagers helmet", statEffects: { PWR: 3, AGI: 2, END: 2 } },
+            { name: "Electromancers helmet", statEffects: { INS: 2 }, attributeEffects: { Health: 5, Spirit: 1 } },
+            { name: "Sunken armlet", statEffects: { PWR: 2, INS: 2 }, attributeEffects: { Mana: 5, ManaRegen: 1 } },
+            { name: "Demonic charm", statEffects: { INS: 3, WIT: 3 } },
+            { name: "Warlords leg guards", statEffects: { PWR: 3, END: 2 }, attributeEffects: { Health: 5 } },
+            { name: "Dark omen of protection", statEffects: { END: 4, PWR: 2 } },
+            { name: "Waveskipper boots", statEffects: { AGI: 3, WIT: 2 }, attributeEffects: { Mana: 4 } },
+            { name: "Wizards robe", statEffects: { WIT: 3, INS: 3 }, attributeEffects: { Mana: 5 } },
+            { name: "Shamans warpaint", statEffects: { INS: 2, WIT: 2 }, attributeEffects: { Mana: 8 } },
+            { name: "Dwarven war helm", statEffects: { END: 3, PWR: 2 } },
+            { name: "Priests necklace", statEffects: { INS: 4, WIT: 2, ALL: 2 } },
+            { name: "Dancers armlet", statEffects: { ALL: 3, PWR: 2 } },
+            { name: "Knights armour", statEffects: { PWR: 2, END: 2, INS: 2 }, attributeEffects: { Health: 5 } },
+            { name: "Old gods garb", statEffects: { END: 3, WIT: 3 }, attributeEffects: { Swiftness: 2, Spirit: 1 } },
+            { name: "Dark iron armour", statEffects: { END: 2 }, attributeEffects: { Swiftness: 2, Spirit: 2 } },
+            { name: "Wild armlet", statEffects: { AGI: 3, ALL: 2, PWR: 1 } },
+            { name: "Berzerkers chestplate", statEffects: { PWR: 5 }, attributeEffects: { Health: 5 } },
+            { name: "Raindancers headband", statEffects: { INS: 3, WIT: 2, END: 1 } },
+            { name: "Dark priests crystal eye", statEffects: { WIT: 3 }, attributeEffects: { Mana: 15 } },
+            { name: "Gladiators warpaint", statEffects: { PWR: 3 }, attributeEffects: { Health: 8 } },
+            { name: "Band of Nasmanai", statEffects: { AGI: 3, PWR: 2 }, attributeEffects: { Swiftness: 1 } },
+            { name: "Titan bracelet", statEffects: { END: 3, PWR: 2 }, attributeEffects: { Health: 8 } },
+            { name: "Sacrificers gauntlet", statEffects: { INS: 3 }, attributeEffects: { Spirit: 2 } },
+            { name: "Venomancers hood", statEffects: { END: 3, INS: 3 }, attributeEffects: { Health: 6 } },
+            { name: "Cursed armour", statEffects: { PWR: 5, AGI: 5, ALL: 5, Health: 10 }, attributeEffects: { Swiftness: -8, Spirit: -8 } },
+            { name: "Spiked handwraps", statEffects: { PWR: 3, AGI: 3 }, attributeEffects: { Spirit: 1 } },
+            { name: "Graveborn amulet", statEffects: { PWR: 3, INS: 3 }, attributeEffects: { Mana: 6 } },
+            { name: "Wanderers ring", statEffects: { END: 4, WIT: 1 }, attributeEffects: { Mana: 7 } },
+            { name: "Wise amulet", statEffects: {}, attributeEffects: { Health: 4, Mana: 4, ManaRegen: 1, Spirit: 1 } },
+            { name: "Forbidden crown", statEffects: { INS: 3, WIT: 3 }, attributeEffects: { Spirit: 1 } },
+            { name: "Buried gauntlet", statEffects: { END: 4, PWR: 3 }, attributeEffects: { Swiftness: 2 } },
+            { name: "Tribal garb", statEffects: { INS: 3, WIT: 3 }, attributeEffects: { Spirit: 2, Swiftness: 1 } },
+            { name: "Priests robe", statEffects: { END: 2, INS: 2, WIT: 1 }, attributeEffects: { Mana: 5 } },
+            { name: "Kings cloak", statEffects: {}, attributeEffects: { Mana: 7, Health: 5, Swiftness: 1 } },
+            { name: "Shamans bracelet", statEffects: { INS: 2, WIT: 1 }, attributeEffects: { Mana: 8 } },
+            { name: "Boots of the wicked", statEffects: { PWR: 3, AGI: 1 }, attributeEffects: { Swiftness: 2 } },
+            { name: "Great rogues regalia", statEffects: { AGI: 4, ALL: 3 } },
+            { name: "Armlet of the sacrificed", statEffects: { INS: 3, PWR: 2 } },
+            { name: "Dark iron gauntlets", statEffects: { PWR: 3 }, attributeEffects: { Swiftness: 1 } },
+            { name: "Forest queens crown", statEffects: { AGI: 3, ALL: 2 } },
+            { name: "Dark lords headband", statEffects: { PWR: 2, AGI: 2, ALL: 2 } },
+            { name: "Meteor necklace", statEffects: { INS: 3, WIT: 1 }, attributeEffects: { Mana: 10 } },
+            { name: "Sages robe", statEffects: { INS: 2, WIT: 2 } },
+            { name: "The forbidden lords crystal eye", statEffects: { INS: 4, ALL: 4, AGI: 2 } },
+            { name: "Forgotten handwraps", statEffects: { PWR: 2, AGI: 2, ALL: 2 } },
+            { name: "Stormcallers hood", statEffects: { INS: 2, AGI: 2 }, attributeEffects: { Mana: 4, Spirit: 1 } },
+            { name: "Birthday suit", statEffects: { PWR: 5, AGI: 5, ALL: 5 }, attributeEffects: { Health: 7, Swiftness: -7, Spirit: -7 } }
+        ];
 
-const profList = [
-    // 10
-    "+1 Arcana +1 Foresight +1 Taming",
-    // 11
-    "+2 Performance +1 Foresight",
-    // 12
-    "+2 Stealth +1 Athletics",
-    // 13
-    "+2 Taming +1 Arcana",
-    // 14
-    "+2 Might +1 Survival",
-    // 15
-    "+1 Might +1 Perception +1 Foresight",
-    // 16
-    "+1 Perception",
-    // 17
-    "+1 Survival +1 Resist",
-    // 18
-    "+1 Theft +1 Persuasion",
-    // 19
-    "+1 Survival +1 Resist +1 Athletics",
-    // 20
-    "+2 Arcana +1 Perception",
-    // 21
-    "+2 Arcana +1 Taming",
-    // 22
-    "+2 Performance +1 Arcana",
-    // 23
-    "+2 Might +1 Resist",
-    // 24
-    "+1 Resist +1 Survival +1 Performance",
-    // 25
-    "+2 Survival +1 Athletics",
-    // 26
-    "+1 Might +1 Theft +1 Persuasion",
-    // 27
-    "+2 Athletics +1 Stealth",
-    // 28
-    "+2 Stealth +1 Theft",
-    // 29
-    "+2 Taming +1 Athletics",
-    // 30
-    "+2 Foresight +1 Survival",
-    // 31
-    "+2 Performance +1 Survival",
-    // 32
-    "+2 Might",
-    // 33
-    "+1 Stealth +1 Resist",
-    // 34
-    "",
-    // 35
-    "+2 Resist",
-    // 36
-    "+1 Survival +1 Arcana",
-    // 37
-    "+1 Might +1 Performance +1 Arcana",
-    // 38
-    "+2 Taming +1 Survival",
-    // 39
-    "+1 Athletics +1 Might +1 Survival",
-    // 40
-    "+2 Taming",
-    // 41
-    "+1 Perception +1 Arcana +1 Foresight",
-    // 42
-    "+1 Athletics +1 Survival +1 Foresight",
-    // 43
-    "+2 Theft +1 Stealth",
-    // 44
-    "+3 Might",
-    // 45
-    "+2 Arcana +1 Might",
-    // 46
-    "+2 Survival +1 Arcana",
-    // 47
-    "+1 Perception",
-    // 48
-    "+1 Survival +1 Perception",
-    // 49
-    "+1 Survival",
-    // 50
-    "+1 Stealth +1 Survival",
-    // 51
-    "+3 Performance",
-    // 52
-    "+1 Stealth +1 Performance +1 Arcana",
-    // 53
-    "+2 Athletics +1 Survival",
-    // 54
-    "+2 Taming +1 Survival",
-    // 55
-    "+2 Perception +1 Arcana",
-    // 56
-    "+2 Perception",
-    // 57
-    "+2 Performance +1 Athletics",
-    // 58
-    "+1 Survival +1 Persuasion +1 Performance",
-    // 59
-    "+3 Stealth",
-    // 60-69
-    "+1 Might +1 Taming +1 Foresight",
-    "+1 Might +1 Taming",
-    "+2 Taming",
-    "+1 Might +1 Arcana",
-    "+2 Arcana +1 Performance",
-    "+2 Arcana +1 Foresight",
-    "+2 Perception",
-    "+1 Athletics",
-    "+1 Survival +1 Arcana",
-    "+2 Might +1 Survival"
-];
+        const profList = [
+            // 10
+            "+1 Arcana +1 Foresight +1 Taming",
+            // 11
+            "+2 Performance +1 Foresight",
+            // 12
+            "+2 Stealth +1 Athletics",
+            // 13
+            "+2 Taming +1 Arcana",
+            // 14
+            "+2 Might +1 Survival",
+            // 15
+            "+1 Might +1 Perception +1 Foresight",
+            // 16
+            "+1 Perception",
+            // 17
+            "+1 Survival +1 Resist",
+            // 18
+            "+1 Theft +1 Persuasion",
+            // 19
+            "+1 Survival +1 Resist +1 Athletics",
+            // 20
+            "+2 Arcana +1 Perception",
+            // 21
+            "+2 Arcana +1 Taming",
+            // 22
+            "+2 Performance +1 Arcana",
+            // 23
+            "+2 Might +1 Resist",
+            // 24
+            "+1 Resist +1 Survival +1 Performance",
+            // 25
+            "+2 Survival +1 Athletics",
+            // 26
+            "+1 Might +1 Theft +1 Persuasion",
+            // 27
+            "+2 Athletics +1 Stealth",
+            // 28
+            "+2 Stealth +1 Theft",
+            // 29
+            "+2 Taming +1 Athletics",
+            // 30
+            "+2 Foresight +1 Survival",
+            // 31
+            "+2 Performance +1 Survival",
+            // 32
+            "+2 Might",
+            // 33
+            "+1 Stealth +1 Resist",
+            // 34
+            "",
+            // 35
+            "+2 Resist",
+            // 36
+            "+1 Survival +1 Arcana",
+            // 37
+            "+1 Might +1 Performance +1 Arcana",
+            // 38
+            "+2 Taming +1 Survival",
+            // 39
+            "+1 Athletics +1 Might +1 Survival",
+            // 40
+            "+2 Taming",
+            // 41
+            "+1 Perception +1 Arcana +1 Foresight",
+            // 42
+            "+1 Athletics +1 Survival +1 Foresight",
+            // 43
+            "+2 Theft +1 Stealth",
+            // 44
+            "+3 Might",
+            // 45
+            "+2 Arcana +1 Might",
+            // 46
+            "+2 Survival +1 Arcana",
+            // 47
+            "+1 Perception",
+            // 48
+            "+1 Survival +1 Perception",
+            // 49
+            "+1 Survival",
+            // 50
+            "+1 Stealth +1 Survival",
+            // 51
+            "+3 Performance",
+            // 52
+            "+1 Stealth +1 Performance +1 Arcana",
+            // 53
+            "+2 Athletics +1 Survival",
+            // 54
+            "+2 Taming +1 Survival",
+            // 55
+            "+2 Perception +1 Arcana",
+            // 56
+            "+2 Perception",
+            // 57
+            "+2 Performance +1 Athletics",
+            // 58
+            "+1 Survival +1 Persuasion +1 Performance",
+            // 59
+            "+3 Stealth",
+            // 60-69
+            "+1 Might +1 Taming +1 Foresight",
+            "+1 Might +1 Taming",
+            "+2 Taming",
+            "+1 Might +1 Arcana",
+            "+2 Arcana +1 Performance",
+            "+2 Arcana +1 Foresight",
+            "+2 Perception",
+            "+1 Athletics",
+            "+1 Survival +1 Arcana",
+            "+2 Might +1 Survival"
+        ];
         
         const loreList = [
             "You are a knight!",
@@ -711,6 +794,13 @@ const profList = [
         const spiritStat = document.getElementById('spiritStat');
         const advantageStat = document.getElementById('advantageStat');
         
+        // Manager section elements
+        const resourceInput = document.getElementById('resourceInput');
+        const gainButton = document.getElementById('gainButton');
+        const loseButton = document.getElementById('loseButton');
+        const healthToggle = document.getElementById('healthToggle');
+        const manaToggle = document.getElementById('manaToggle');
+        
         // Function to get a random number within a range
         function getRandomNumber(max, min = 0) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -731,6 +821,12 @@ const profList = [
             // Reset attributes to base values
             attributes = JSON.parse(JSON.stringify(baseAttributes));
             
+            // Reset current and max health/mana
+            currentHealth = 0;
+            maxHealth = 0;
+            currentMana = 0;
+            maxMana = 0;
+            
             // Update stat displays
             updateStatDisplays();
         }
@@ -740,242 +836,243 @@ const profList = [
             endStat.textContent = `END: ${stats.END > 0 ? '+' : ''}${stats.END}`;
             insStat.textContent = `INS: ${stats.INS > 0 ? '+' : ''}${stats.INS}`;
             witStat.textContent = `WIT: ${stats.WIT > 0 ? '+' : ''}${stats.WIT}`;
-            agiStat.textContent = `AGI: ${stats.AGI > 0 ? '+' : ''}${stats.AGI}`;
             allStat.textContent = `ALL: ${stats.ALL > 0 ? '+' : ''}${stats.ALL}`;
+            agiStat.textContent = `AGI: ${stats.AGI > 0 ? '+' : ''}${stats.AGI}`;
             pwrStat.textContent = `PWR: ${stats.PWR > 0 ? '+' : ''}${stats.PWR}`;
             
             // Update attribute displays
-            healthStat.textContent = `Health: ${attributes.health}`;
-            manaStat.textContent = `Mana: ${attributes.mana}`;
+            healthStat.textContent = `Health: ${maxHealth} / ${currentHealth}`;
+            manaStat.textContent = `Mana: ${maxMana} / ${currentMana}`;
             manaRegenStat.textContent = `Mana Regen: ${attributes.manaRegen}`;
-            swiftnessStat.textContent = `Swiftness: ${attributes.swiftness}`;
             spiritStat.textContent = `Spirit: ${attributes.spirit}`;
+            swiftnessStat.textContent = `Swiftness: ${attributes.swiftness}`;
             advantageStat.textContent = `Advantage: ${attributes.advantage}`;
         }
         
-// Function to apply stat changes (handles opposites)
-function applyStatChanges(statChanges) {
-    // First apply all the positive changes
-    for (const [stat, value] of Object.entries(statChanges)) {
-        stats[stat] += value;
-    }
-    
-    // Then apply the opposite stat changes
-    for (const [stat, value] of Object.entries(statChanges)) {
-        switch(stat) {
-            case 'END':
-                stats.ALL -= value;
-                break;
-            case 'ALL':
-                stats.END -= value;
-                break;
-            case 'AGI':
-                stats.INS -= value;
-                break;
-            case 'INS':
-                stats.AGI -= value;
-                break;
-            case 'PWR':
-                stats.WIT -= value;
-                break;
-            case 'WIT':
-                stats.PWR -= value;
-                break;
+        // Function to apply stat changes (handles opposites)
+        function applyStatChanges(statChanges) {
+            // First apply all the positive changes
+            for (const [stat, value] of Object.entries(statChanges)) {
+                stats[stat] += value;
+            }
+            
+            // Then apply the opposite stat changes
+            for (const [stat, value] of Object.entries(statChanges)) {
+                switch(stat) {
+                    case 'END':
+                        stats.ALL -= value;
+                        break;
+                    case 'ALL':
+                        stats.END -= value;
+                        break;
+                    case 'AGI':
+                        stats.INS -= value;
+                        break;
+                    case 'INS':
+                        stats.AGI -= value;
+                        break;
+                    case 'PWR':
+                        stats.WIT -= value;
+                        break;
+                    case 'WIT':
+                        stats.PWR -= value;
+                        break;
+                }
+            }
+            
+            // Update attributes based on stats
+            updateAttributesFromStats();
         }
-    }
-    
-    // Update attributes based on stats
-    updateAttributesFromStats();
-}
-
-// Function to update attributes based on current stats
-function updateAttributesFromStats() {
-    attributes.health = baseAttributes.health + stats.END;
-    // Add any health bonuses from items (handled separately)
-    
-    attributes.mana = baseAttributes.mana + stats.INS;
-    attributes.manaRegen = baseAttributes.manaRegen + stats.WIT;
-    attributes.swiftness = baseAttributes.swiftness + stats.AGI;
-    attributes.spirit = baseAttributes.spirit + stats.ALL;
-    attributes.advantage = baseAttributes.advantage + stats.PWR;
-}
-
-// Function to reset all stats and attributes to base values
-function resetStatsAndAttributes() {
-    // Reset stats
-    stats = {
-        END: 0,
-        INS: 0,
-        WIT: 0,
-        AGI: 0,
-        ALL: 0,
-        PWR: 0
-    };
-    
-    // Reset attributes to base values
-    attributes = JSON.parse(JSON.stringify(baseAttributes));
-    
-    // Update stat displays
-    updateStatDisplays();
-}
+        
+        // Function to update attributes based on current stats
+        function updateAttributesFromStats() {
+            attributes.health = baseAttributes.health + stats.END;
+            // Add any health bonuses from items (handled separately)
+            
+            attributes.mana = baseAttributes.mana + stats.INS;
+            attributes.manaRegen = baseAttributes.manaRegen + stats.WIT;
+            attributes.swiftness = baseAttributes.swiftness + stats.AGI;
+            attributes.spirit = baseAttributes.spirit + stats.ALL;
+            attributes.advantage = baseAttributes.advantage + stats.PWR;
+            
+            // Set max health and mana based on calculated attributes
+            maxHealth = attributes.health;
+            maxMana = attributes.mana;
+            
+            // Set current health and mana to max (unless they're already set)
+            if (currentHealth === 0) currentHealth = maxHealth;
+            if (currentMana === 0) currentMana = maxMana;
+        }
         
         // Function to apply attribute changes
         function applyAttributeChanges(attributeChanges) {
             for (const [attribute, value] of Object.entries(attributeChanges)) {
                 attributes[attribute] += value;
+                
+                // Update max health/mana if those attributes changed
+                if (attribute === 'health') {
+                    maxHealth = attributes.health;
+                    // Ensure current health doesn't exceed new max
+                    if (currentHealth > maxHealth) currentHealth = maxHealth;
+                }
+                if (attribute === 'mana') {
+                    maxMana = attributes.mana;
+                    // Ensure current mana doesn't exceed new max
+                    if (currentMana > maxMana) currentMana = maxMana;
+                }
             }
         }
         
-// Function to perform a reroll
-function reroll() {
-    // Clear all boxes
-    weaponBox.textContent = '';
-    spellBox.textContent = '';
-    passiveBox.textContent = '';
-    itemBox.textContent = '';
-    loreBox.textContent = '';
-    profBox.textContent = '';
-    
-    // Reset stats and attributes
-    resetStatsAndAttributes();
-    
-    // Determine the maximum index based on toggle
-    const maxRegularIndex = 59; // Assuming you have 60 items (0-59)
-    const maxWeirdWorldIndex = 69; // Assuming you have 70 items (0-69)
-    
-    const maxIndex = weirdWorldToggle.checked ? maxWeirdWorldIndex : maxRegularIndex;
-    
-    // Get two different random numbers
-    let num1 = getRandomNumber(maxIndex);
-    let num2 = getRandomNumber(maxIndex);
-    
-    // Ensure they're different
-    while (num2 === num1) {
-        num2 = getRandomNumber(maxIndex);
-    }
-    
-    // Get items from lists - changed these to let since we might reassign them for weird world
-    let weapon1 = num1 < weaponList.length ? weaponList[num1] : "N/A";
-    let weapon2 = num2 < weaponList.length ? weaponList[num2] : "N/A";
-    
-    let spell1 = num1 < spellList.length ? spellList[num1] : "N/A";
-    let spell2 = num2 < spellList.length ? spellList[num2] : "N/A";
-    
-    let passive1 = num1 < passiveList.length ? passiveList[num1] : "N/A";
-    let passive2 = num2 < passiveList.length ? passiveList[num2] : "N/A";
-    
-    let item1 = num1 < itemList.length ? itemList[num1] : { name: "N/A" };
-    let item2 = num2 < itemList.length ? itemList[num2] : { name: "N/A" };
-    
-    let lore1 = num1 < loreList.length ? loreList[num1] : "N/A";
-    let lore2 = num2 < loreList.length ? loreList[num2] : "N/A";
-    
-    // Get professions from lists - changed to let for weird world reassignment
-    let prof1 = num1 < profList.length ? profList[num1] : "+0 Bonus";
-    let prof2 = num2 < profList.length ? profList[num2] : "+0 Bonus";
+        // Function to perform a reroll
+        function reroll() {
+            // Clear all boxes
+            weaponBox.textContent = '';
+            spellBox.textContent = '';
+            passiveBox.textContent = '';
+            itemBox.textContent = '';
+            loreBox.textContent = '';
+            profBox.textContent = '';
+            
+            // Reset stats and attributes
+            resetStatsAndAttributes();
+            
+            // Determine the maximum index based on toggle
+            const maxRegularIndex = 59; // Assuming you have 60 items (0-59)
+            const maxWeirdWorldIndex = 69; // Assuming you have 70 items (0-69)
+            
+            const maxIndex = weirdWorldToggle.checked ? maxWeirdWorldIndex : maxRegularIndex;
+            
+            // Get two different random numbers
+            let num1 = getRandomNumber(maxIndex);
+            let num2 = getRandomNumber(maxIndex);
+            
+            // Ensure they're different
+            while (num2 === num1) {
+                num2 = getRandomNumber(maxIndex);
+            }
+            
+            // Get items from lists - changed these to let since we might reassign them for weird world
+            let weapon1 = num1 < weaponList.length ? weaponList[num1] : "N/A";
+            let weapon2 = num2 < weaponList.length ? weaponList[num2] : "N/A";
+            
+            let spell1 = num1 < spellList.length ? spellList[num1] : "N/A";
+            let spell2 = num2 < spellList.length ? spellList[num2] : "N/A";
+            
+            let passive1 = num1 < passiveList.length ? passiveList[num1] : "N/A";
+            let passive2 = num2 < passiveList.length ? passiveList[num2] : "N/A";
+            
+            let item1 = num1 < itemList.length ? itemList[num1] : { name: "N/A" };
+            let item2 = num2 < itemList.length ? itemList[num2] : { name: "N/A" };
+            
+            let lore1 = num1 < loreList.length ? loreList[num1] : "N/A";
+            let lore2 = num2 < loreList.length ? loreList[num2] : "N/A";
+            
+            // Get professions from lists - changed to let for weird world reassignment
+            let prof1 = num1 < profList.length ? profList[num1] : "+0 Bonus";
+            let prof2 = num2 < profList.length ? profList[num2] : "+0 Bonus";
 
-    // Get weird world professions if toggle is on
-    if (weirdWorldToggle.checked) {
-        if (num1 >= maxRegularIndex) {
-            const weirdIndex = num1 - maxRegularIndex;
-            if (weirdIndex < weirdWorldProfList.length) {
-                prof1 = weirdWorldProfList[weirdIndex];
+            // Get weird world professions if toggle is on
+            if (weirdWorldToggle.checked) {
+                if (num1 >= maxRegularIndex) {
+                    const weirdIndex = num1 - maxRegularIndex;
+                    if (weirdIndex < weirdWorldProfList.length) {
+                        prof1 = weirdWorldProfList[weirdIndex];
+                    }
+                }
+                if (num2 >= maxRegularIndex) {
+                    const weirdIndex = num2 - maxRegularIndex;
+                    if (weirdIndex < weirdWorldProfList.length) {
+                        prof2 = weirdWorldProfList[weirdIndex];
+                    }
+                }
             }
-        }
-        if (num2 >= maxRegularIndex) {
-            const weirdIndex = num2 - maxRegularIndex;
-            if (weirdIndex < weirdWorldProfList.length) {
-                prof2 = weirdWorldProfList[weirdIndex];
-            }
-        }
-    }
 
-    // Process and combine professions
-    const combinedProfessions = combineProfessions(prof1, prof2);
-    profBox.textContent = combinedProfessions;
-    
-    // Get weird world items if toggle is on and numbers are in that range
-    if (weirdWorldToggle.checked) {
-        if (num1 >= maxRegularIndex) {
-            const weirdIndex = num1 - maxRegularIndex;
-            if (weirdIndex < weirdWorldWeapons.length) weapon1 = weirdWorldWeapons[weirdIndex];
-            if (weirdIndex < weirdWorldSpells.length) spell1 = weirdWorldSpells[weirdIndex];
-            if (weirdIndex < weirdWorldPassives.length) passive1 = weirdWorldPassives[weirdIndex];
-            if (weirdIndex < weirdWorldItems.length) item1 = weirdWorldItems[weirdIndex];
-            if (weirdIndex < weirdWorldLore.length) lore1 = weirdWorldLore[weirdIndex];
+            // Process and combine professions
+            const combinedProfessions = combineProfessions(prof1, prof2);
+            profBox.textContent = combinedProfessions;
+            
+            // Get weird world items if toggle is on and numbers are in that range
+            if (weirdWorldToggle.checked) {
+                if (num1 >= maxRegularIndex) {
+                    const weirdIndex = num1 - maxRegularIndex;
+                    if (weirdIndex < weirdWorldWeapons.length) weapon1 = weirdWorldWeapons[weirdIndex];
+                    if (weirdIndex < weirdWorldSpells.length) spell1 = weirdWorldSpells[weirdIndex];
+                    if (weirdIndex < weirdWorldPassives.length) passive1 = weirdWorldPassives[weirdIndex];
+                    if (weirdIndex < weirdWorldItems.length) item1 = weirdWorldItems[weirdIndex];
+                    if (weirdIndex < weirdWorldLore.length) lore1 = weirdWorldLore[weirdIndex];
+                }
+                
+                if (num2 >= maxRegularIndex) {
+                    const weirdIndex = num2 - maxRegularIndex;
+                    if (weirdIndex < weirdWorldWeapons.length) weapon2 = weirdWorldWeapons[weirdIndex];
+                    if (weirdIndex < weirdWorldSpells.length) spell2 = weirdWorldSpells[weirdIndex];
+                    if (weirdIndex < weirdWorldPassives.length) passive2 = weirdWorldPassives[weirdIndex];
+                    if (weirdIndex < weirdWorldItems.length) item2 = weirdWorldItems[weirdIndex];
+                    if (weirdIndex < weirdWorldLore.length) lore2 = weirdWorldLore[weirdIndex];
+                }
+            }
+            
+            // Display results with proper line breaks
+            weaponBox.innerHTML = formatMultiItemEntry(`${weapon1}<br><br>${weapon2}`);
+            spellBox.innerHTML = formatMultiItemEntry(`${spell1}<br><br>${spell2}`);
+            passiveBox.innerHTML = formatMultiItemEntry(`${passive1}<br><br>${passive2}`);
+            itemBox.innerHTML = formatMultiItemEntry(`${formatItemText(item1)}<br><br>${formatItemText(item2)}`);
+            
+            // Display lore if toggle is on
+            if (loreToggle.checked) {
+                loreBox.innerHTML = `${lore1}<br><br>${lore2}`;
+            }
+            
+            // NEW STAT LOGIC: Apply stat changes first
+            if (item1.statEffects) applyStatChanges(item1.statEffects);
+            if (item2.statEffects) applyStatChanges(item2.statEffects);
+            
+            // Then apply attribute changes (including any direct health bonuses)
+            if (item1.attributeEffects) applyAttributeChanges(item1.attributeEffects);
+            if (item2.attributeEffects) applyAttributeChanges(item2.attributeEffects);
+            
+            // Update displays
+            updateStatDisplays();
         }
-        
-        if (num2 >= maxRegularIndex) {
-            const weirdIndex = num2 - maxRegularIndex;
-            if (weirdIndex < weirdWorldWeapons.length) weapon2 = weirdWorldWeapons[weirdIndex];
-            if (weirdIndex < weirdWorldSpells.length) spell2 = weirdWorldSpells[weirdIndex];
-            if (weirdIndex < weirdWorldPassives.length) passive2 = weirdWorldPassives[weirdIndex];
-            if (weirdIndex < weirdWorldItems.length) item2 = weirdWorldItems[weirdIndex];
-            if (weirdIndex < weirdWorldLore.length) lore2 = weirdWorldLore[weirdIndex];
-        }
-    }
-    
-    // Display results with proper line breaks
-    weaponBox.innerHTML = formatMultiItemEntry(`${weapon1}<br><br>${weapon2}`);
-    spellBox.innerHTML = formatMultiItemEntry(`${spell1}<br><br>${spell2}`);
-    passiveBox.innerHTML = formatMultiItemEntry(`${passive1}<br><br>${passive2}`);
-    itemBox.innerHTML = formatMultiItemEntry(`${formatItemText(item1)}<br><br>${formatItemText(item2)}`);
-    
-    // Display lore if toggle is on
-    if (loreToggle.checked) {
-        loreBox.innerHTML = `${lore1}<br><br>${lore2}`;
-        }
-    
-    // NEW STAT LOGIC: Apply stat changes first
-    if (item1.statEffects) applyStatChanges(item1.statEffects);
-    if (item2.statEffects) applyStatChanges(item2.statEffects);
-    
-    // Then apply attribute changes (including any direct health bonuses)
-    if (item1.attributeEffects) applyAttributeChanges(item1.attributeEffects);
-    if (item2.attributeEffects) applyAttributeChanges(item2.attributeEffects);
-    
-    // Update displays
-    updateStatDisplays();
-}
 
-            // Helper function to format item text with stats
-    function formatItemText(item) {
-        let text = item.name;
-        const statParts = [];
-        const attributeParts = [];
-        
-        // Add stat effects if they exist
-        if (item.statEffects) {
-            for (const [stat, value] of Object.entries(item.statEffects)) {
-                statParts.push(`${value > 0 ? '+' : ''}${value} ${stat}`);
+        // Helper function to format item text with stats
+        function formatItemText(item) {
+            let text = item.name;
+            const statParts = [];
+            const attributeParts = [];
+            
+            // Add stat effects if they exist
+            if (item.statEffects) {
+                for (const [stat, value] of Object.entries(item.statEffects)) {
+                    statParts.push(`${value > 0 ? '+' : ''}${value} ${stat}`);
+                }
             }
-        }
-        
-        // Add attribute effects if they exist
-        if (item.attributeEffects) {
-            for (const [attr, value] of Object.entries(item.attributeEffects)) {
-                // Capitalize first letter of attribute
-                const attrName = attr.charAt(0).toUpperCase() + attr.slice(1);
-                attributeParts.push(`${value > 0 ? '+' : ''}${value} ${attrName}`);
+            
+            // Add attribute effects if they exist
+            if (item.attributeEffects) {
+                for (const [attr, value] of Object.entries(item.attributeEffects)) {
+                    // Capitalize first letter of attribute
+                    const attrName = attr.charAt(0).toUpperCase() + attr.slice(1);
+                    attributeParts.push(`${value > 0 ? '+' : ''}${value} ${attrName}`);
+                }
             }
+            
+            // Combine all parts
+            const allParts = [...statParts, ...attributeParts];
+            if (allParts.length > 0) {
+                text += ` (${allParts.join(', ')})`;
+            }
+            
+            return text;
         }
-        
-        // Combine all parts
-        const allParts = [...statParts, ...attributeParts];
-        if (allParts.length > 0) {
-            text += ` (${allParts.join(', ')})`;
-        }
-        
-        return text;
-    }
 
         // Helper function to split and format multi-item entries
-function formatMultiItemEntry(entry) {
-    // Split by 3 or more spaces (regex: \s{3,})
-    return entry.split(/\s{3,}/).join('<br><br>');
-}
+        function formatMultiItemEntry(entry) {
+            // Split by 3 or more spaces (regex: \s{3,})
+            return entry.split(/\s{3,}/).join('<br><br>');
+        }
 
-                // New function to combine and format professions
+        // New function to combine and format professions
         function combineProfessions(prof1, prof2) {
             const skillMap = new Map();
             
@@ -1005,6 +1102,51 @@ function formatMultiItemEntry(entry) {
             // Format the output
             return sortedSkills.map(([skill, value]) => `+${value} ${skill}`).join(', ');
         }
+        
+        // Function to handle resource changes
+        function changeResource(amount) {
+            const value = parseInt(resourceInput.value) || 0;
+            const changeAmount = amount * value;
+            
+            if (healthToggle.checked) {
+                // Change health
+                currentHealth += changeAmount;
+                // Ensure health stays within bounds
+                currentHealth = Math.max(0, Math.min(currentHealth, maxHealth));
+            } else {
+                // Change mana
+                currentMana += changeAmount;
+                // Ensure mana stays within bounds
+                currentMana = Math.max(0, Math.min(currentMana, maxMana));
+            }
+            
+            // Update displays
+            updateStatDisplays();
+            
+            // Clear the input
+            resourceInput.value = '';
+        }
+        
+        // Event listeners for manager section
+        gainButton.addEventListener('click', () => changeResource(1));
+        loseButton.addEventListener('click', () => changeResource(-1));
+        
+        // Ensure only one toggle is active at a time
+        healthToggle.addEventListener('change', function() {
+            if (this.checked) {
+                manaToggle.checked = false;
+            } else {
+                manaToggle.checked = true;
+            }
+        });
+        
+        manaToggle.addEventListener('change', function() {
+            if (this.checked) {
+                healthToggle.checked = false;
+            } else {
+                healthToggle.checked = true;
+            }
+        });
         
         // Event listener for reroll button
         rerollButton.addEventListener('click', reroll);
