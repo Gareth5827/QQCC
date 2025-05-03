@@ -884,7 +884,7 @@
             updateAttributesFromStats();
         }
         
-        // Function to update attributes based on current stats
+        // Function to update attributes based on current stats and item bonuses
         function updateAttributesFromStats() {
             // Calculate base attributes from stats
             attributes.health = baseAttributes.health + stats.END;
@@ -895,9 +895,13 @@
             attributes.advantage = baseAttributes.advantage + stats.PWR;
         
             // Set max health and mana based on calculated attributes
-            // (This is the base before any item bonuses)
+            // (This includes both stat bonuses and any item bonuses that were applied)
             maxHealth = attributes.health;
             maxMana = attributes.mana;
+            
+            // Set current health and mana to max values
+            currentHealth = maxHealth;
+            currentMana = maxMana;
         }
         
         // Function to apply attribute changes (from items)
@@ -908,15 +912,15 @@
                 // Update max health/mana if those attributes changed
                 if (attribute === 'health') {
                     maxHealth = attributes.health;
-                    // Ensure current health doesn't exceed new max
-                    currentHealth = Math.min(currentHealth, maxHealth);
                 }
                 if (attribute === 'mana') {
                     maxMana = attributes.mana;
-                    // Ensure current mana doesn't exceed new max
-                    currentMana = Math.min(currentMana, maxMana);
                 }
             }
+            
+            // Ensure current values don't exceed new max values
+            currentHealth = Math.min(currentHealth, maxHealth);
+            currentMana = Math.min(currentMana, maxMana);
         }
         
         // Function to perform a reroll
