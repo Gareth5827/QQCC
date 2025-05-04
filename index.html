@@ -902,11 +902,11 @@
             attributes = JSON.parse(JSON.stringify(baseAttributes));
             
             // Reset current and max health/mana (they'll be recalculated during reroll)
-            currentHealth = 0;
-            maxHealth = 0;
-            currentMana = 0;
-            maxMana = 0;
-
+            currentHealth = baseAttributes.health;
+            maxHealth = baseAttributes.health;
+            currentMana = baseAttributes.mana;
+            maxMana = baseAttributes.mana;
+        
             // Update stat displays
             updateStatDisplays();
         }
@@ -921,8 +921,8 @@
             pwrStat.textContent = `PWR: ${stats.PWR > 0 ? '+' : ''}${stats.PWR}`;
             
             // Update attribute displays with current/max values
-            healthStat.textContent = `Health: ${maxHealth} / ${currentHealth}`;
-            manaStat.textContent = `Mana: ${maxMana} / ${currentMana}`;
+            healthStat.textContent = `Health: ${currentHealth} / ${maxHealth}`;
+            manaStat.textContent = `Mana: ${currentMana} / ${maxMana}`;
             manaRegenStat.textContent = `Mana Regen: ${attributes.manaRegen}`;
             spiritStat.textContent = `Spirit: ${attributes.spirit}`;
             swiftnessStat.textContent = `Swiftness: ${attributes.swiftness}`;
@@ -964,51 +964,43 @@
             updateAttributesFromStats();
         }
         
-    // Function to update attributes based on current stats and item bonuses
-    function updateAttributesFromStats() {
-        // Reset to base values first
-        attributes.health = baseAttributes.health;
-        attributes.mana = baseAttributes.mana;
-        attributes.manaRegen = baseAttributes.manaRegen;
-        attributes.swiftness = baseAttributes.swiftness;
-        attributes.spirit = baseAttributes.spirit;
-        attributes.advantage = baseAttributes.advantage;
-        
-        // Apply stat bonuses
-        attributes.health += stats.END;
-        attributes.mana += stats.INS;
-        attributes.manaRegen += stats.WIT;
-        attributes.swiftness += stats.AGI;
-        attributes.spirit += stats.ALL;
-        attributes.advantage += stats.PWR;
-    }
+        // Function to update attributes based on current stats and item bonuses
+        function updateAttributesFromStats() {
+            // Reset to base values first
+            attributes.health = baseAttributes.health;
+            attributes.mana = baseAttributes.mana;
+            attributes.manaRegen = baseAttributes.manaRegen;
+            attributes.swiftness = baseAttributes.swiftness;
+            attributes.spirit = baseAttributes.spirit;
+            attributes.advantage = baseAttributes.advantage;
+            
+            // Apply stat bonuses
+            attributes.health += stats.END;
+            attributes.mana += stats.INS;
+            attributes.manaRegen += stats.WIT;
+            attributes.swiftness += stats.AGI;
+            attributes.spirit += stats.ALL;
+            attributes.advantage += stats.PWR;
+        }
 
-    // Function to apply attribute changes (from items)
-    function applyAttributeChanges(attributeChanges) {
-        // First update base attributes from stats
-        updateAttributesFromStats();
-        
-        // Apply item bonuses to both attributes and max values
-        for (const [attribute, value] of Object.entries(attributeChanges)) {
-            // For health and mana, we need to track both the attribute and max value
-            if (attribute === 'health' || attribute === 'mana') {
-                attributes[attribute] += value;
-            } else {
+        // Function to apply attribute changes (from items)
+        function applyAttributeChanges(attributeChanges) {
+            // First update base attributes from stats
+            updateAttributesFromStats();
+            
+            // Apply item bonuses to both attributes and max values
+            for (const [attribute, value] of Object.entries(attributeChanges)) {
                 attributes[attribute] += value;
             }
+            
+            // Calculate final max values after all bonuses are applied
+            maxHealth = attributes.health;
+            maxMana = attributes.mana;
+            
+            // Set current values (without exceeding max)
+            currentHealth = Math.min(currentHealth, maxHealth);
+            currentMana = Math.min(currentMana, maxMana);
         }
-        
-        // Calculate final max values after all bonuses are applied
-        maxHealth = attributes.health;
-        maxMana = attributes.mana;
-        
-        // Set current values (without exceeding max)
-        currentHealth = Math.min(currentHealth, maxHealth);
-        currentMana = Math.min(currentMana, maxMana);
-
-        currentHealth = maxHealth
-        currentMana = maxMana
-    }
         
         // Function to perform a reroll
         function reroll() {
