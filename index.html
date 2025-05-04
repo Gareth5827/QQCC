@@ -90,11 +90,6 @@
             text-align: center;
         }
         
-        .manager-buttons {
-            display: flex;
-            gap: 5px;
-        }
-        
         .manager-button {
             padding: 8px 16px;
             background-color: #4CAF50;
@@ -169,56 +164,57 @@
         </div>
     </div>
     
-    <!-- Stats and Attributes container -->
-    <div class="stats-attributes-container">
-        <!-- Stats display -->
-        <div>
-            <h2>Stats</h2>
-            <div class="stats-container">
-                <div>
-                    <div class="stat-box" id="endStat">END: 0</div>
-                    <div class="stat-box" id="insStat">INS: 0</div>
-                    <div class="stat-box" id="witStat">WIT: 0</div>
+        <!-- Stats and Attributes container -->
+        <div class="stats-attributes-container">
+            <!-- Stats display -->
+            <div>
+                <h2>Stats</h2>
+                <div class="stats-container">
+                    <div>
+                        <div class="stat-box" id="endStat">END: 0</div>
+                        <div class="stat-box" id="insStat">INS: 0</div>
+                        <div class="stat-box" id="witStat">WIT: 0</div>
+                    </div>
+                    <div>
+                        <div class="stat-box" id="allStat">ALL: 0</div>
+                        <div class="stat-box" id="agiStat">AGI: 0</div>
+                        <div class="stat-box" id="pwrStat">PWR: 0</div>
+                    </div>
                 </div>
-                <div>
-                    <div class="stat-box" id="allStat">ALL: 0</div>
-                    <div class="stat-box" id="agiStat">AGI: 0</div>
-                    <div class="stat-box" id="pwrStat">PWR: 0</div>
+                
+                <!-- Attributes display -->
+                <h2>Attributes</h2>
+                <div class="stats-container">
+                    <div>
+                        <div class="stat-box" id="healthStat">Health: 0 / 0</div>
+                        <div class="stat-box" id="manaStat">Mana: 0 / 0</div>
+                        <div class="stat-box" id="manaRegenStat">Mana Regen: 0</div>
+                    </div>
+                    <div>
+                        <div class="stat-box" id="spiritStat">Spirit: 0</div>
+                        <div class="stat-box" id="swiftnessStat">Swiftness: 0</div>
+                        <div class="stat-box" id="advantageStat">Advantage: 0</div>
+                    </div>
                 </div>
             </div>
             
-            <!-- Attributes display -->
-            <h2>Attributes</h2>
-            <div class="stats-container">
-                <div>
-                    <div class="stat-box" id="healthStat">Health: 0 / 0</div>
-                    <div class="stat-box" id="manaStat">Mana: 0 / 0</div>
-                    <div class="stat-box" id="manaRegenStat">Mana Regen: 0</div>
+            <!-- Manager Section -->
+            <div class="manager-section">
+                <div class="manager-controls">
+                    <button class="manager-button" id="gainButton">Gain</button>
+                    <input type="number" class="manager-input" id="resourceInput" min="0" value="0">
+                    <button class="manager-button" id="loseButton">Lose</button>
                 </div>
-                <div>
-                    <div class="stat-box" id="spiritStat">Spirit: 0</div>
-                    <div class="stat-box" id="swiftnessStat">Swiftness: 0</div>
-                    <div class="stat-box" id="advantageStat">Advantage: 0</div>
+                <div class="manager-toggles">
+                    <label>
+                        <input type="radio" name="resourceType" id="healthToggle" checked> Health
+                    </label>
+                    <label>
+                        <input type="radio" name="resourceType" id="manaToggle"> Mana
+                    </label>
                 </div>
             </div>
-        </div>
-        
-        <!-- Manager Section --
-        <div class="manager-section">
-            <div class="manager-controls">
-                <button class="manager-button" id="gainButton">Gain</button>
-                <input type="number" class="manager-input" id="resourceInput" min="0" value="0">
-                <button class="manager-button" id="loseButton">Lose</button>
-            </div>
-            <div class="manager-toggles">
-                <label>
-                    <input type="radio" name="resourceType" id="healthToggle" checked> Health
-                </label>
-                <label>
-                    <input type="radio" name="resourceType" id="manaToggle"> Mana
-                </label>
-            </div>
-        </div>
+        </div> <!-- Closing stats-attributes-container div -->
 
     <script>
         // Base attribute values
