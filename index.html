@@ -216,6 +216,25 @@
             </div>
         </div> <!-- Closing stats-attributes-container div -->
 
+    <!-- Image Section -->
+    <div class="image-section" style="margin-top: 30px;">
+        <h2>Character Images</h2>
+        <div class="image-grid">
+            <div class="image-row">
+                <img id="image1" src="" alt="Image 1" style="width: 300px; height: 300px; object-fit: cover;">
+                <img id="image2" src="" alt="Image 2" style="width: 300px; height: 300px; object-fit: cover;">
+                <img id="image3" src="" alt="Image 3" style="width: 300px; height: 300px; object-fit: cover;">
+                <img id="image4" src="" alt="Image 4" style="width: 300px; height: 300px; object-fit: cover;">
+            </div>
+            <div class="image-row">
+                <img id="image5" src="" alt="Image 5" style="width: 300px; height: 300px; object-fit: cover;">
+                <img id="image6" src="" alt="Image 6" style="width: 300px; height: 300px; object-fit: cover;">
+                <img id="image7" src="" alt="Image 7" style="width: 300px; height: 300px; object-fit: cover;">
+                <img id="image8" src="" alt="Image 8" style="width: 300px; height: 300px; object-fit: cover;">
+            </div>
+        </div>
+    </div>
+
     <script>
         // Base attribute values
         const baseAttributes = {
@@ -245,6 +264,65 @@
         let maxHealth = 0;
         let currentMana = 0;
         let maxMana = 0;
+
+            <script>
+        // Image mapping for each slot
+        const slotImageMap = {
+            10: ["SnakeskinWhip", "VolcanicEruption", "HellishEmbers", "DemonicCharm"],
+            11: ["WaterAmulet", "AquaticBlessing", "SagesCharm", "AquamancersBracelet"],
+            12: ["AngelSword", "Blowdart", "RottingTouch", "HuntersArmlet"],
+            // Add mappings for all your slots here following the same pattern
+            // Example:
+            32: ["StoneWarhammer", "BlessingOfTheMountain", "StonePillar", "DwarvenWarHelm"],
+            50: ["EnergyTransfer", "SpiritArmour", "BlessingOfTheDamned", "WanderersRing"]
+            // Continue with all other slots...
+        };
+
+        // Function to set image with rare chance
+        function setImageWithRareChance(elementId, imageName) {
+            const imgElement = document.getElementById(elementId);
+            const isRare = Math.random() < 0.01; // 1% chance for rare
+            
+            if (isRare) {
+                // Try rare image first
+                const rareImagePath = `Images/RareImages/Rare${imageName}.png`;
+                imgElement.onerror = function() {
+                    // If rare image fails, try normal image
+                    const normalImagePath = `Images/${imageName}.png`;
+                    imgElement.src = normalImagePath;
+                    imgElement.onerror = function() {
+                        // If normal image fails, use null image
+                        imgElement.src = "Images/NullImage.png";
+                    };
+                };
+                imgElement.src = rareImagePath;
+            } else {
+                // Try normal image
+                const normalImagePath = `Images/${imageName}.png`;
+                imgElement.onerror = function() {
+                    // If normal image fails, use null image
+                    imgElement.src = "Images/NullImage.png";
+                };
+                imgElement.src = normalImagePath;
+            }
+        }
+
+        // Function to update images based on slots
+        function updateImages(slot1, slot2) {
+            // Get images for first slot
+            const slot1Images = slotImageMap[slot1] || ["NullImage", "NullImage", "NullImage", "NullImage"];
+            setImageWithRareChance("image1", slot1Images[0]);
+            setImageWithRareChance("image2", slot1Images[1]);
+            setImageWithRareChance("image3", slot1Images[2]);
+            setImageWithRareChance("image4", slot1Images[3]);
+            
+            // Get images for second slot
+            const slot2Images = slotImageMap[slot2] || ["NullImage", "NullImage", "NullImage", "NullImage"];
+            setImageWithRareChance("image5", slot2Images[0]);
+            setImageWithRareChance("image6", slot2Images[1]);
+            setImageWithRareChance("image7", slot2Images[2]);
+            setImageWithRareChance("image8", slot2Images[3]);
+        }
         
         // Lists of items, weapons, spells, etc.
         const weaponList = [
@@ -829,7 +907,8 @@
             maxHealth = 0;
             currentMana = 0;
             maxMana = 0;
-            
+
+            updateImages(num1, num2);
             // Update stat displays
             updateStatDisplays();
         }
