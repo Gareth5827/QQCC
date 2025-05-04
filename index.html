@@ -64,7 +64,7 @@
             color: #333;
         }
 
-        /* New styles for the manager section */
+        /* Updated Manager Section CSS */
         .manager-section {
             background-color: white;
             border: 1px solid #ddd;
@@ -72,42 +72,53 @@
             padding: 15px;
             margin-top: 20px;
         }
-
+        
         .manager-controls {
             display: flex;
             gap: 10px;
             align-items: center;
             margin-bottom: 10px;
+            justify-content: center;
         }
-
+        
         .manager-input {
-            width: 60px;
-            padding: 5px;
+            width: 80px;
+            padding: 8px;
             border: 1px solid #ddd;
             border-radius: 3px;
+            font-size: 18px;
+            text-align: center;
         }
-
+        
         .manager-buttons {
             display: flex;
             gap: 5px;
         }
-
+        
         .manager-button {
-            padding: 5px 10px;
+            padding: 8px 16px;
             background-color: #4CAF50;
             color: white;
             border: none;
             border-radius: 3px;
             cursor: pointer;
+            font-size: 18px;
         }
-
+        
         .manager-button:hover {
             background-color: #45a049;
         }
-
+        
         .manager-toggles {
             display: flex;
-            gap: 10px;
+            gap: 15px;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .manager-toggles input[type="radio"] {
+            transform: scale(1.3);
+            margin-right: 5px;
         }
 
         .stats-attributes-container {
@@ -192,15 +203,12 @@
             </div>
         </div>
         
-        <!-- Manager Section -->
+        <!-- Manager Section --
         <div class="manager-section">
-            <h2>Resource Manager</h2>
             <div class="manager-controls">
+                <button class="manager-button" id="gainButton">Gain</button>
                 <input type="number" class="manager-input" id="resourceInput" min="0" value="0">
-                <div class="manager-buttons">
-                    <button class="manager-button" id="gainButton">gain</button>
-                    <button class="manager-button" id="loseButton">lose</button>
-                </div>
+                <button class="manager-button" id="loseButton">Lose</button>
             </div>
             <div class="manager-toggles">
                 <label>
@@ -211,7 +219,6 @@
                 </label>
             </div>
         </div>
-    </div>
 
     <script>
         // Base attribute values
