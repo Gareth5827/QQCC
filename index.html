@@ -265,7 +265,6 @@
         let currentMana = 0;
         let maxMana = 0;
 
-            <script>
         // Image mapping for each slot
         const slotImageMap = {
             10: ["SnakeskinWhip", "VolcanicEruption", "HellishEmbers", "DemonicCharm"],
@@ -306,23 +305,23 @@
                 imgElement.src = normalImagePath;
             }
         }
-
-            // Function to update images based on slots
-        function updateImages(slot1, slot2) {
-            // Get images for first slot
-            const slot1Images = slotImageMap[slot1] || ["NullImage", "NullImage", "NullImage", "NullImage"];
-            setImageWithRareChance("image1", slot1Images[0]);
-            setImageWithRareChance("image2", slot1Images[1]);
-            setImageWithRareChance("image3", slot1Images[2]);
-            setImageWithRareChance("image4", slot1Images[3]);
-            
-            // Get images for second slot
-            const slot2Images = slotImageMap[slot2] || ["NullImage", "NullImage", "NullImage", "NullImage"];
-            setImageWithRareChance("image5", slot2Images[0]);
-            setImageWithRareChance("image6", slot2Images[1]);
-            setImageWithRareChance("image7", slot2Images[2]);
-            setImageWithRareChance("image8", slot2Images[3]);
-        }
+        
+        // Function to update images based on slots
+                function updateImages(slot1, slot2) {
+                    // Get images for first slot
+                    const slot1Images = slotImageMap[slot1] || ["NullImage", "NullImage", "NullImage", "NullImage"];
+                    setImageWithRareChance("image1", slot1Images[0]);
+                    setImageWithRareChance("image2", slot1Images[1]);
+                    setImageWithRareChance("image3", slot1Images[2]);
+                    setImageWithRareChance("image4", slot1Images[3]);
+                    
+                    // Get images for second slot
+                    const slot2Images = slotImageMap[slot2] || ["NullImage", "NullImage", "NullImage", "NullImage"];
+                    setImageWithRareChance("image5", slot2Images[0]);
+                    setImageWithRareChance("image6", slot2Images[1]);
+                    setImageWithRareChance("image7", slot2Images[2]);
+                    setImageWithRareChance("image8", slot2Images[3]);
+                }
         
         // Lists of items, weapons, spells, etc.
         const weaponList = [
@@ -908,7 +907,6 @@
             currentMana = 0;
             maxMana = 0;
 
-            updateImages(num1, num2);
             // Update stat displays
             updateStatDisplays();
         }
@@ -1112,7 +1110,8 @@
             // Then apply attribute changes (including any direct health bonuses)
             if (item1.attributeEffects) applyAttributeChanges(item1.attributeEffects);
             if (item2.attributeEffects) applyAttributeChanges(item2.attributeEffects);
-            
+
+            updateImages(num1, num2);
             // Update displays
             updateStatDisplays();
         }
