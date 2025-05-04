@@ -973,32 +973,31 @@
             attributes.swiftness = baseAttributes.swiftness + stats.AGI;
             attributes.spirit = baseAttributes.spirit + stats.ALL;
             attributes.advantage = baseAttributes.advantage + stats.PWR;
-        
-            // Set max health and mana based on calculated attributes
-            // (This includes both stat bonuses and any item bonuses that were applied)
-            maxHealth = attributes.health;
-            maxMana = attributes.mana;
-            
-            // Set current health and mana to max values
-            currentHealth = maxHealth;
-            currentMana = maxMana;
         }
         
         // Function to apply attribute changes (from items)
         function applyAttributeChanges(attributeChanges) {
+            // First update base attributes from stats
+            updateAttributesFromStats();
+            
+            // Apply item bonuses
             for (const [attribute, value] of Object.entries(attributeChanges)) {
                 attributes[attribute] += value;
-        
-                // Update max health/mana if those attributes changed
-                if (attribute === 'health') {
-                    maxHealth = attributes.health;
-                }
-                if (attribute === 'mana') {
-                    maxMana = attributes.mana;
-                }
             }
             
-            // Ensure current values don't exceed new max values
+            // Calculate final max values after all bonuses are applied
+            maxHealth = attributes.health;
+            maxMana = attributes.mana;
+            
+            // Special handling for direct health/mana bonuses from items
+            if (attributeChanges.health) {
+                maxHealth += attributeChanges.health;
+            }
+            if (attributeChanges.mana) {
+                maxMana += attributeChanges.mana;
+            }
+            
+            // Set current values (without exceeding max)
             currentHealth = Math.min(currentHealth, maxHealth);
             currentMana = Math.min(currentMana, maxMana);
         }
