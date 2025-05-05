@@ -900,12 +900,6 @@
             
             // Reset attributes to base values
             attributes = JSON.parse(JSON.stringify(baseAttributes));
-            
-            // Reset current and max health/mana (they'll be recalculated during reroll)
-            currentHealth = baseAttributes.health;
-            maxHealth = baseAttributes.health;
-            currentMana = baseAttributes.mana;
-            maxMana = baseAttributes.mana;
         
             // Update stat displays
             updateStatDisplays();
@@ -921,8 +915,8 @@
             pwrStat.textContent = `PWR: ${stats.PWR > 0 ? '+' : ''}${stats.PWR}`;
             
             // Update attribute displays with current/max values
-            healthStat.textContent = `Health: ${currentHealth} / ${maxHealth}`;
-            manaStat.textContent = `Mana: ${currentMana} / ${maxMana}`;
+            healthStat.textContent = `Health: ${maxHealth} / ${currentHealth}`;
+            manaStat.textContent = `Mana: ${maxMana} / ${currentMana}`;
             manaRegenStat.textContent = `Mana Regen: ${attributes.manaRegen}`;
             spiritStat.textContent = `Spirit: ${attributes.spirit}`;
             swiftnessStat.textContent = `Swiftness: ${attributes.swiftness}`;
@@ -985,9 +979,6 @@
 
         // Function to apply attribute changes (from items)
         function applyAttributeChanges(attributeChanges) {
-            // First update base attributes from stats
-            updateAttributesFromStats();
-            
             // Apply item bonuses to both attributes and max values
             for (const [attribute, value] of Object.entries(attributeChanges)) {
                 attributes[attribute] += value;
@@ -998,8 +989,8 @@
             maxMana = attributes.mana;
             
             // Set current values (without exceeding max)
-            currentHealth = Math.min(currentHealth, maxHealth);
-            currentMana = Math.min(currentMana, maxMana);
+            currentHealth = Math.min(maxHealth, currentHealth);
+            currentMana = Math.min(maxMana, currentMana);
         }
         
         // Function to perform a reroll
