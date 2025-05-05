@@ -188,7 +188,7 @@
                     <div>
                         <div class="stat-box" id="healthStat">Health: 0 / 0</div>
                         <div class="stat-box" id="manaStat">Mana: 0 / 0</div>
-                        <div class="stat-box" id="manaRegenStat">Mana Regen: 0</div>
+                        <div class="stat-box" id="manaregenStat">Mana Regen: 0</div>
                     </div>
                     <div>
                         <div class="stat-box" id="spiritStat">Spirit: 0</div>
@@ -240,7 +240,7 @@
         const baseAttributes = {
             health: 23,
             mana: 20,
-            manaRegen: 7,
+            manaregen: 7,
             swiftness: 10,
             spirit: 10,
             advantage: 0
@@ -641,13 +641,13 @@
             { name: "Cloudstriders charm", statEffects: { END: 2, INS: 2, WIT: 1 }, attributeEffects: { health: 3 } },
             { name: "Dragonscale chestplate", statEffects: { END: 4 }, attributeEffects: { health: 6, swiftness: -2, spirit: -2 } },
             { name: "Draconic cloak", statEffects: { AGI: 2, WIT: 2, ALL: 1 } },
-            { name: "Geomancers chestplate", statEffects: { END: 3, PWR: 1 }, attributeEffects: { mana: 4, manaRegen: 1 } },
+            { name: "Geomancers chestplate", statEffects: { END: 3, PWR: 1 }, attributeEffects: { mana: 4, manaregen: 1 } },
             { name: "Archmage's amulet", statEffects: { INS: 4, WIT: 1 }, attributeEffects: { mana: 5 } },
             { name: "Holy locket", statEffects: { INS: 2, ALL: 2, WIT: 1 } },
             { name: "Shamans garb", statEffects: { INS: 2, ALL: 2 }, attributeEffects: { health: 3, mana: 3 } },
             { name: "Rampagers helmet", statEffects: { PWR: 3, AGI: 2, END: 2 } },
             { name: "Electromancers helmet", statEffects: { INS: 2 }, attributeEffects: { health: 5, spirit: 1 } },
-            { name: "Sunken armlet", statEffects: { PWR: 2, INS: 2 }, attributeEffects: { mana: 5, manaRegen: 1 } },
+            { name: "Sunken armlet", statEffects: { PWR: 2, INS: 2 }, attributeEffects: { mana: 5, manaregen: 1 } },
             { name: "Demonic charm", statEffects: { INS: 3, WIT: 3 } },
             { name: "Warlords leg guards", statEffects: { PWR: 3, END: 2 }, attributeEffects: { health: 5 } },
             { name: "Dark omen of protection", statEffects: { END: 4, PWR: 2 } },
@@ -673,7 +673,7 @@
             { name: "Spiked handwraps", statEffects: { PWR: 3, AGI: 3 }, attributeEffects: { spirit: 1 } },
             { name: "Graveborn amulet", statEffects: { PWR: 3, INS: 3 }, attributeEffects: { mana: 6 } },
             { name: "Wanderers ring", statEffects: { END: 4, WIT: 1 }, attributeEffects: { mana: 7 } },
-            { name: "Wise amulet", statEffects: {}, attributeEffects: { health: 4, mana: 4, manaRegen: 1, spirit: 1 } },
+            { name: "Wise amulet", statEffects: {}, attributeEffects: { health: 4, mana: 4, manaregen: 1, spirit: 1 } },
             { name: "Forbidden crown", statEffects: { INS: 3, WIT: 3 }, attributeEffects: { spirit: 1 } },
             { name: "Buried gauntlet", statEffects: { END: 4, PWR: 3 }, attributeEffects: { swiftness: 2 } },
             { name: "Tribal garb", statEffects: { INS: 3, WIT: 3 }, attributeEffects: { spirit: 2, swiftness: 1 } },
@@ -869,7 +869,7 @@
         // Attribute display elements
         const healthStat = document.getElementById('healthStat');
         const manaStat = document.getElementById('manaStat');
-        const manaRegenStat = document.getElementById('manaRegenStat');
+        const manaregenStat = document.getElementById('manaregenStat');
         const swiftnessStat = document.getElementById('swiftnessStat');
         const spiritStat = document.getElementById('spiritStat');
         const advantageStat = document.getElementById('advantageStat');
@@ -935,7 +935,7 @@
             // Update attribute displays with current/max values
             healthStat.textContent = `Health: ${maxHealth} / ${currentHealth}`;
             manaStat.textContent = `Mana: ${maxMana} / ${currentMana}`;
-            manaRegenStat.textContent = `Mana Regen: ${attributes.manaRegen}`;
+            manaregenStat.textContent = `Mana Regen: ${attributes.manaregen}`;
             spiritStat.textContent = `Spirit: ${attributes.spirit}`;
             swiftnessStat.textContent = `Swiftness: ${attributes.swiftness}`;
             advantageStat.textContent = `Advantage: ${attributes.advantage}`;
@@ -985,7 +985,7 @@
             // Reset to base values first
             attributes.health = baseAttributes.health;
             attributes.mana = baseAttributes.mana;
-            attributes.manaRegen = baseAttributes.manaRegen;
+            attributes.manaregen = baseAttributes.manaregen;
             attributes.swiftness = baseAttributes.swiftness;
             attributes.spirit = baseAttributes.spirit;
             attributes.advantage = baseAttributes.advantage;
@@ -995,7 +995,7 @@
             // Apply stat bonuses
             attributes.health += stats.END;
             attributes.mana += stats.INS;
-            attributes.manaRegen += stats.WIT;
+            attributes.manaregen += stats.WIT;
             attributes.swiftness += stats.AGI;
             attributes.spirit += stats.ALL;
             attributes.advantage += stats.PWR;
@@ -1019,9 +1019,9 @@
                 }
             }
             
-            // Calculate final max values after all bonuses are applied
-            maxHealth = attributes.health;
-            maxMana = attributes.mana;
+            // Calculate final max values after all bonuses are applied                        IF HEALTH AND MANA STILL DISPLAY INCORRECTLY, RE-ADD THIS!
+            // maxHealth = attributes.health;
+            // maxMana = attributes.mana;
             
             // Set current values (without exceeding max)
             currentHealth = Math.min(currentHealth, maxHealth);
@@ -1162,7 +1162,7 @@
             console.log("Final attributes after changes:", {
                 health: maxHealth,
                 mana: maxMana,
-                manaRegen: attributes.manaRegen,
+                manaregen: attributes.manaregen,
                 swiftness: attributes.swiftness,
                 spirit: attributes.spirit,  // Fixed typo here (was previously 'spirit')
                 advantage: attributes.advantage,
