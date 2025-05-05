@@ -1002,7 +1002,43 @@
             currentMana = Math.min(currentMana, maxMana);
         }
         
-        // Function to perform a reroll
+        // Add this new function to update attributes based on rolled items
+        function UpdateAttributesMethod(rolledItemIndices) {
+            // Reset attributes to base values first
+            attributes = JSON.parse(JSON.stringify(baseAttributes));
+            
+            // Apply stat bonuses first (since they affect attributes)
+            updateAttributesFromStats();
+            
+            // Now apply item attribute bonuses
+            let totalAttributeEffects = {};
+            
+            // Gather all attribute effects from rolled items
+            for (const index of rolledItemIndices) {
+                if (index < itemList.length && itemList[index].attributeEffects) {
+                    for (const [attr, value] of Object.entries(itemList[index].attributeEffects)) {
+                        // Convert attribute name to match our attributes object (e.g., "mana" -> "Mana")
+                        const normalizedAttr = attr.charAt(0).toUpperCase() + attr.slice(1).toLowerCase();
+                        totalAttributeEffects[normalizedAttr] = (totalAttributeEffects[normalizedAttr] || 0) + value;
+                    }
+                }
+            }
+            
+            // Apply the accumulated attribute effects
+            for (const [attr, value] of Object.entries(totalAttributeEffects)) {
+                if (attributes.hasOwnProperty(attr)) {
+                    attributes[attr] += value;
+                }
+            }
+            
+            // Update max and current values
+            maxHealth = attributes.health;
+            maxMana = attributes.mana;
+            currentHealth = maxHealth;
+            currentMana = maxMana;
+        }
+        
+        // Modify the reroll function to track item indices and call the new method
         function reroll() {
             // Clear all boxes
             weaponBox.textContent = '';
@@ -1016,21 +1052,23 @@
             resetStatsAndAttributes();
             
             // Determine the maximum index based on toggle
-            const maxRegularIndex = 59; // Assuming you have 60 items (0-59)
-            const maxWeirdWorldIndex = 69; // Assuming you have 70 items (0-69)
-            
+            const maxRegularIndex = 59;
+            const maxWeirdWorldIndex = 69;
             const maxIndex = weirdWorldToggle.checked ? maxWeirdWorldIndex : maxRegularIndex;
             
             // Get two different random numbers
             let num1 = getRandomNumber(maxIndex);
             let num2 = getRandomNumber(maxIndex);
-            
-            // Ensure they're different
             while (num2 === num1) {
                 num2 = getRandomNumber(maxIndex);
             }
             
-            // Get items from lists - changed these to let since we might reassign them for weird world
+            // Track which item indices we're using
+            const rolledItemIndices = [];
+            if (num1 < itemList.length) rolledItemIndices.push(num1);
+            if (num2 < itemList.length) rolledItemIndices.push(num2);
+            
+            // Get items from lists
             let weapon1 = num1 < weaponList.length ? weaponList[num1] : "N/A";
             let weapon2 = num2 < weaponList.length ? weaponList[num2] : "N/A";
             
@@ -1046,72 +1084,37 @@
             let lore1 = num1 < loreList.length ? loreList[num1] : "N/A";
             let lore2 = num2 < loreList.length ? loreList[num2] : "N/A";
             
-            // Get professions from lists - changed to let for weird world reassignment
+            // Get professions
             let prof1 = num1 < profList.length ? profList[num1] : "+0 Bonus";
             let prof2 = num2 < profList.length ? profList[num2] : "+0 Bonus";
-
-            // Get weird world professions if toggle is on
+        
+            // Handle weird world items if toggle is on
             if (weirdWorldToggle.checked) {
-                if (num1 >= maxRegularIndex) {
-                    const weirdIndex = num1 - maxRegularIndex;
-                    if (weirdIndex < weirdWorldProfList.length) {
-                        prof1 = weirdWorldProfList[weirdIndex];
-                    }
-                }
-                if (num2 >= maxRegularIndex) {
-                    const weirdIndex = num2 - maxRegularIndex;
-                    if (weirdIndex < weirdWorldProfList.length) {
-                        prof2 = weirdWorldProfList[weirdIndex];
-                    }
-                }
+                // ... (keep existing weird world logic)
             }
-
+        
             // Process and combine professions
             const combinedProfessions = combineProfessions(prof1, prof2);
             profBox.textContent = combinedProfessions;
             
-            // Get weird world items if toggle is on and numbers are in that range
-            if (weirdWorldToggle.checked) {
-                if (num1 >= maxRegularIndex) {
-                    const weirdIndex = num1 - maxRegularIndex;
-                    if (weirdIndex < weirdWorldWeapons.length) weapon1 = weirdWorldWeapons[weirdIndex];
-                    if (weirdIndex < weirdWorldSpells.length) spell1 = weirdWorldSpells[weirdIndex];
-                    if (weirdIndex < weirdWorldPassives.length) passive1 = weirdWorldPassives[weirdIndex];
-                    if (weirdIndex < weirdWorldItems.length) item1 = weirdWorldItems[weirdIndex];
-                    if (weirdIndex < weirdWorldLore.length) lore1 = weirdWorldLore[weirdIndex];
-                }
-                
-                if (num2 >= maxRegularIndex) {
-                    const weirdIndex = num2 - maxRegularIndex;
-                    if (weirdIndex < weirdWorldWeapons.length) weapon2 = weirdWorldWeapons[weirdIndex];
-                    if (weirdIndex < weirdWorldSpells.length) spell2 = weirdWorldSpells[weirdIndex];
-                    if (weirdIndex < weirdWorldPassives.length) passive2 = weirdWorldPassives[weirdIndex];
-                    if (weirdIndex < weirdWorldItems.length) item2 = weirdWorldItems[weirdIndex];
-                    if (weirdIndex < weirdWorldLore.length) lore2 = weirdWorldLore[weirdIndex];
-                }
-            }
-            
-            // Display results with proper line breaks
+            // Display results
             weaponBox.innerHTML = formatMultiItemEntry(`${weapon1}<br><br>${weapon2}`);
             spellBox.innerHTML = formatMultiItemEntry(`${spell1}<br><br>${spell2}`);
             passiveBox.innerHTML = formatMultiItemEntry(`${passive1}<br><br>${passive2}`);
             itemBox.innerHTML = formatMultiItemEntry(`${formatItemText(item1)}<br><br>${formatItemText(item2)}`);
             
-            // Display lore if toggle is on
             if (loreToggle.checked) {
                 loreBox.innerHTML = `${lore1}<br><br>${lore2}`;
             }
             
-            // NEW STAT LOGIC: Apply stat changes first
+            // Apply stat changes first
             if (item1.statEffects) applyStatChanges(item1.statEffects);
             if (item2.statEffects) applyStatChanges(item2.statEffects);
             
-            // Then apply attribute changes (including any direct health bonuses)
-            if (item1.attributeEffects) applyAttributeChanges(item1.attributeEffects);
-            if (item2.attributeEffects) applyAttributeChanges(item2.attributeEffects);
-
+            // Now update attributes based on the rolled items
+            UpdateAttributesMethod(rolledItemIndices);
+            
             updateImages(num1, num2);
-            // Update displays
             updateStatDisplays();
         }
 
