@@ -1028,7 +1028,7 @@
             currentMana = Math.min(currentMana, maxMana);
         }
 
-        function AdjustHealthMana () {
+        function AdjustHealthMana() {
             console.log("--- AdjustHealthMana called! ---");
             currentHealth = maxHealth;
             currentMana = maxMana;
@@ -1081,7 +1081,7 @@
             // Get professions from lists - changed to let for weird world reassignment
             let prof1 = num1 < profList.length ? profList[num1] : "+0 Bonus";
             let prof2 = num2 < profList.length ? profList[num2] : "+0 Bonus";
-
+            AdjustHealthMana();
             // Get weird world professions if toggle is on
             if (weirdWorldToggle.checked) {
                 if (num1 >= maxRegularIndex) {
@@ -1096,8 +1096,6 @@
                         prof2 = weirdWorldProfList[weirdIndex];
                     }
                 }
-
-                AdjustHealthMana();
             }
 
             // Process and combine professions
