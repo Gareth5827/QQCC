@@ -1095,8 +1095,9 @@
             }
 
         function AdjustHealthMana () {
-                currentHealth = attributes.health;
-                currentMana = attributes.mana;
+            console.log("--- AdjustHealthMana called! ---");
+                currentHealth = maxHealth;
+                currentMana = maxMana;
             }
 
             // Process and combine professions
