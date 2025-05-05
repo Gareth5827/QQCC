@@ -1090,6 +1090,13 @@
                         prof2 = weirdWorldProfList[weirdIndex];
                     }
                 }
+
+                AdjustHealthMana();
+            }
+
+        function AdjustHealthMana () {
+                currentHealth = maxHealth;
+                currentMana = maxMana;
             }
 
             // Process and combine professions
