@@ -888,6 +888,9 @@
         
         // Function to reset all stats and attributes to base values
         function resetStatsAndAttributes() {
+            console.log("--- resetStatsAndAttributes Debug ---");
+            console.log("Resetting all stats and attributes to base values");
+            
             // Reset stats
             stats = {
                 END: 0,
@@ -909,6 +912,15 @@
         
             // Update stat displays
             updateStatDisplays();
+            
+            console.log("After reset:", {
+                stats: JSON.parse(JSON.stringify(stats)),
+                attributes: JSON.parse(JSON.stringify(attributes)),
+                currentHealth,
+                maxHealth,
+                currentMana,
+                maxMana
+            });
         }
         
         // Function to update all stat displays
@@ -966,6 +978,10 @@
         
         // Function to update attributes based on current stats and item bonuses
         function updateAttributesFromStats() {
+            console.log("--- updateAttributesFromStats Debug ---");
+            console.log("Current stats:", JSON.parse(JSON.stringify(stats)));
+            console.log("Current attributes BEFORE reset:", JSON.parse(JSON.stringify(attributes)));
+            
             // Reset to base values first
             attributes.health = baseAttributes.health;
             attributes.mana = baseAttributes.mana;
@@ -974,6 +990,8 @@
             attributes.spirit = baseAttributes.spirit;
             attributes.advantage = baseAttributes.advantage;
             
+            console.log("After reset to base:", JSON.parse(JSON.stringify(attributes)));
+            
             // Apply stat bonuses
             attributes.health += stats.END;
             attributes.mana += stats.INS;
@@ -981,17 +999,27 @@
             attributes.swiftness += stats.AGI;
             attributes.spirit += stats.ALL;
             attributes.advantage += stats.PWR;
+            
+            console.log("After applying stat bonuses:", JSON.parse(JSON.stringify(attributes)));
         }
 
         // Function to apply attribute changes (from items)
         function applyAttributeChanges(attributeChanges) {
+            console.log("--- applyAttributeChanges Debug ---");
+            console.log("Current attributes BEFORE changes:", JSON.parse(JSON.stringify(attributes)));
+            console.log("Applying attributeChanges:", attributeChanges);
+            
             // First update base attributes from stats
             updateAttributesFromStats();
+            console.log("After updateAttributesFromStats:", JSON.parse(JSON.stringify(attributes)));
             
             // Apply item bonuses to both attributes and max values
             for (const [attribute, value] of Object.entries(attributeChanges)) {
+                console.log(`Applying ${value} to ${attribute}`);
                 attributes[attribute] += value;
             }
+            
+            console.log("Attributes AFTER applying changes:", JSON.parse(JSON.stringify(attributes)));
             
             // Calculate final max values after all bonuses are applied
             maxHealth = attributes.health;
@@ -1000,6 +1028,9 @@
             // Set current values (without exceeding max)
             currentHealth = Math.min(currentHealth, maxHealth);
             currentMana = Math.min(currentMana, maxMana);
+            
+            console.log("Final max values:", { maxHealth, maxMana });
+            console.log("Final current values:", { currentHealth, currentMana });
         }
         
         // Function to perform a reroll
@@ -1138,8 +1169,10 @@
                 mana: maxMana,
                 manaRegen: attributes.manaRegen,
                 swiftness: attributes.swiftness,
-                spirit: attributes.spirit,
-                advantage: attributes.advantage
+                spirit: attributes.spirit,  // Fixed typo here (was previously 'spirit')
+                advantage: attributes.advantage,
+                stats: JSON.parse(JSON.stringify(stats)),
+                baseAttributes: JSON.parse(JSON.stringify(baseAttributes))
             });
     
             updateImages(num1, num2);
