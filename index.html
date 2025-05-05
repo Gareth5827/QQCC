@@ -1102,14 +1102,46 @@
                 loreBox.innerHTML = `${lore1}<br><br>${lore2}`;
             }
             
+            // Debug: Log item attribute effects
+            console.log("--- Debugging Attribute Effects ---");
+            console.log("Item 1:", item1.name);
+            if (item1.attributeEffects) {
+                console.log("Item 1 attributeEffects:", item1.attributeEffects);
+            } else {
+                console.log("Item 1 has no attributeEffects!");
+            }
+            
+            console.log("Item 2:", item2.name);
+            if (item2.attributeEffects) {
+                console.log("Item 2 attributeEffects:", item2.attributeEffects);
+            } else {
+                console.log("Item 2 has no attributeEffects!");
+            }
+            
             // NEW STAT LOGIC: Apply stat changes first
             if (item1.statEffects) applyStatChanges(item1.statEffects);
             if (item2.statEffects) applyStatChanges(item2.statEffects);
             
             // Then apply attribute changes (including any direct health bonuses)
-            if (item1.attributeEffects) applyAttributeChanges(item1.attributeEffects);
-            if (item2.attributeEffects) applyAttributeChanges(item2.attributeEffects);
-
+            if (item1.attributeEffects) {
+                console.log("Applying Item 1 attributeEffects:", item1.attributeEffects);
+                applyAttributeChanges(item1.attributeEffects);
+            }
+            if (item2.attributeEffects) {
+                console.log("Applying Item 2 attributeEffects:", item2.attributeEffects);
+                applyAttributeChanges(item2.attributeEffects);
+            }
+    
+            // Debug: Log final attribute values
+            console.log("Final attributes after changes:", {
+                health: maxHealth,
+                mana: maxMana,
+                manaRegen: attributes.manaRegen,
+                swiftness: attributes.swiftness,
+                spirit: attributes.spirit,
+                advantage: attributes.advantage
+            });
+    
             updateImages(num1, num2);
             // Update displays
             updateStatDisplays();
