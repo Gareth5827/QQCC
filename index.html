@@ -847,43 +847,66 @@
             // Add more weird world professions
         ];
         
-        // DOM elements
-        const weaponBox = document.getElementById('weaponBox');
-        const spellBox = document.getElementById('spellBox');
-        const passiveBox = document.getElementById('passiveBox');
-        const itemBox = document.getElementById('itemBox');
-        const loreBox = document.getElementById('loreBox');
-        const rerollButton = document.getElementById('rerollButton');
-        const profBox = document.getElementById('profBox');
-        const loreToggle = document.getElementById('loreToggle');
-        const weirdWorldToggle = document.getElementById('weirdWorldToggle');
+        // Track equipped items
+        let equippedItems = [];
         
-        // Stat display elements
-        const endStat = document.getElementById('endStat');
-        const insStat = document.getElementById('insStat');
-        const witStat = document.getElementById('witStat');
-        const agiStat = document.getElementById('agiStat');
-        const allStat = document.getElementById('allStat');
-        const pwrStat = document.getElementById('pwrStat');
+        // Base values for stats
+        let stats = {
+            END: 0,
+            INS: 0,
+            WIT: 0,
+            AGI: 0,
+            ALL: 0,
+            PWR: 0
+        };
         
-        // Attribute display elements
-        const healthStat = document.getElementById('healthStat');
-        const manaStat = document.getElementById('manaStat');
-        const manaRegenStat = document.getElementById('manaRegenStat');
-        const swiftnessStat = document.getElementById('swiftnessStat');
-        const spiritStat = document.getElementById('spiritStat');
-        const advantageStat = document.getElementById('advantageStat');
+        // Base values for attributes (define these at the top of your script)
+        const baseAttributes = {
+            health: 20,     // Base value  
+            mana: 20,       // Base value
+            manaRegen: 1,   // Base value
+            swiftness: 1,   // Base value
+            spirit: 1,      // Base value
+            advantage: 1    // Base value
+        };
         
-        // Manager section elements
-        const resourceInput = document.getElementById('resourceInput');
-        const gainButton = document.getElementById('gainButton');
-        const loseButton = document.getElementById('loseButton');
-        const healthToggle = document.getElementById('healthToggle');
-        const manaToggle = document.getElementById('manaToggle');
+        // Current attributes will be calculated from base + stat bonuses + item effects
+        let attributes = JSON.parse(JSON.stringify(baseAttributes));
         
-        // Function to get a random number within a range
-        function getRandomNumber(max, min = 0) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
+        // Current and maximum resource values
+        let currentHealth = baseAttributes.health;
+        let currentMana = baseAttributes.mana;
+        let maxHealth = baseAttributes.health;
+        let maxMana = baseAttributes.mana;
+        
+        // Function to format item text with stat effects
+        function formatItemText(item) {
+            if (item.name === "N/A") return "N/A";
+            
+            let text = item.name;
+            
+            // Add stat effects if any
+            if (item.statEffects && Object.keys(item.statEffects).length > 0) {
+                text += "<br>Stats: ";
+                for (const [stat, value] of Object.entries(item.statEffects)) {
+                    text += `+${value} ${stat}, `;
+                }
+                // Remove trailing comma and space
+                text = text.slice(0, -2);
+            }
+            
+            // Add attribute effects if any
+            if (item.attributeEffects && Object.keys(item.attributeEffects).length > 0) {
+                text += "<br>Attributes: ";
+                for (const [attr, value] of Object.entries(item.attributeEffects)) {
+                    const sign = value >= 0 ? '+' : '';
+                    text += `${sign}${value} ${attr}, `;
+                }
+                // Remove trailing comma and space
+                text = text.slice(0, -2);
+            }
+            
+            return text;
         }
         
         // Function to reset all stats and attributes to base values
@@ -900,7 +923,16 @@
             
             // Reset attributes to base values
             attributes = JSON.parse(JSON.stringify(baseAttributes));
-        
+            
+            // Reset current and max values
+            maxHealth = baseAttributes.health;
+            maxMana = baseAttributes.mana;
+            currentHealth = maxHealth;
+            currentMana = maxMana;
+            
+            // Clear equipped items
+            equippedItems = [];
+            
             // Update stat displays
             updateStatDisplays();
         }
@@ -914,7 +946,7 @@
             agiStat.textContent = `AGI: ${stats.AGI > 0 ? '+' : ''}${stats.AGI}`;
             pwrStat.textContent = `PWR: ${stats.PWR > 0 ? '+' : ''}${stats.PWR}`;
             
-            // Update attribute displays with current/max values
+            // Update attribute displays
             healthStat.textContent = `Health: ${maxHealth} / ${currentHealth}`;
             manaStat.textContent = `Mana: ${maxMana} / ${currentMana}`;
             manaRegenStat.textContent = `Mana Regen: ${attributes.manaRegen}`;
@@ -923,15 +955,27 @@
             advantageStat.textContent = `Advantage: ${attributes.advantage}`;
         }
         
-        // Function to apply stat changes (handles opposites)
-        function applyStatChanges(statChanges) {
-            // First apply all the positive changes
-            for (const [stat, value] of Object.entries(statChanges)) {
-                stats[stat] += value;
+        // Function to apply stat changes from a single item
+        function applyStatChanges(statEffects) {
+            // Apply regular stat changes
+            for (const [stat, value] of Object.entries(statEffects)) {
+                if (stat === 'ALL') {
+                    // ALL affects all stats equally
+                    stats.END += value;
+                    stats.INS += value;
+                    stats.WIT += value;
+                    stats.AGI += value;
+                    stats.PWR += value;
+                    stats.ALL += value;
+                } else if (stats.hasOwnProperty(stat)) {
+                    stats[stat] += value;
+                }
             }
             
-            // Then apply the opposite stat changes
-            for (const [stat, value] of Object.entries(statChanges)) {
+            // Handle opposite stat effects (if needed)
+            // This section seems to be causing issues, so I'm commenting it out
+            /*
+            for (const [stat, value] of Object.entries(statEffects)) {
                 switch(stat) {
                     case 'END':
                         stats.ALL -= value;
@@ -953,22 +997,15 @@
                         break;
                 }
             }
-            
-            // Update attributes based on stats
-            updateAttributesFromStats();
+            */
         }
         
-        // Function to update attributes based on current stats and item bonuses
-        function updateAttributesFromStats() {
-            // Reset to base values first
-            attributes.health = baseAttributes.health;
-            attributes.mana = baseAttributes.mana;
-            attributes.manaRegen = baseAttributes.manaRegen;
-            attributes.swiftness = baseAttributes.swiftness;
-            attributes.spirit = baseAttributes.spirit;
-            attributes.advantage = baseAttributes.advantage;
+        // Function to calculate attributes based on stats
+        function calculateAttributesFromStats() {
+            // Start with base attributes
+            attributes = JSON.parse(JSON.stringify(baseAttributes));
             
-            // Apply stat bonuses
+            // Apply stat bonuses to attributes
             attributes.health += stats.END;
             attributes.mana += stats.INS;
             attributes.manaRegen += stats.WIT;
@@ -976,30 +1013,71 @@
             attributes.spirit += stats.ALL;
             attributes.advantage += stats.PWR;
         }
-
-        // Function to apply attribute changes (from items)
-        function applyAttributeChanges(attributeChanges) {
-            // First update base attributes from stats
-            updateAttributesFromStats();
-            
-            // Apply item bonuses to both attributes and max values
-            for (const [attribute, value] of Object.entries(attributeChanges)) {
-                // Capitalize the first letter to match attribute names (e.g., "health" -> "Health")
-                const capitalizedAttr = attribute.charAt(0).toUpperCase() + attribute.slice(1);
-                
-                // Apply the bonus
-                if (attributes.hasOwnProperty(capitalizedAttr)) {
-                    attributes[capitalizedAttr] += value;
+        
+        // Function to apply direct attribute bonuses from items
+        function applyAttributeBonuses() {
+            // Apply direct attribute bonuses from each equipped item
+            for (const item of equippedItems) {
+                if (item.attributeEffects) {
+                    for (const [attr, value] of Object.entries(item.attributeEffects)) {
+                        // Check which attribute to update
+                        switch(attr.toLowerCase()) {
+                            case 'health':
+                                attributes.health += value;
+                                break;
+                            case 'mana':
+                                attributes.mana += value;
+                                break;
+                            case 'manaregen':
+                                attributes.manaRegen += value;
+                                break;
+                            case 'swiftness':
+                                attributes.swiftness += value;
+                                break;
+                            case 'spirit':
+                                attributes.spirit += value;
+                                break;
+                            case 'advantage':
+                                attributes.advantage += value;
+                                break;
+                        }
+                    }
                 }
             }
             
-            // Calculate final max values after all bonuses
+            // Update max values
             maxHealth = attributes.health;
             maxMana = attributes.mana;
             
-            // Ensure current values don't exceed max
+            // Ensure current resources don't exceed new maximums
             currentHealth = Math.min(currentHealth, maxHealth);
             currentMana = Math.min(currentMana, maxMana);
+        }
+        
+        // Function to process all stat and attribute changes
+        function processItemEffects() {
+            // First reset stats to zero
+            stats = {
+                END: 0,
+                INS: 0,
+                WIT: 0,
+                AGI: 0,
+                ALL: 0,
+                PWR: 0
+            };
+            
+            // Apply all item stat effects
+            for (const item of equippedItems) {
+                if (item.statEffects) {
+                    applyStatChanges(item.statEffects);
+                }
+            }
+            
+            // Calculate attributes from stats
+            calculateAttributesFromStats();
+            
+            // Apply direct attribute bonuses from items
+            applyAttributeBonuses();
         }
         
         // Function to perform a reroll
@@ -1030,7 +1108,7 @@
                 num2 = getRandomNumber(maxIndex);
             }
             
-            // Get items from lists - changed these to let since we might reassign them for weird world
+            // Get items from lists
             let weapon1 = num1 < weaponList.length ? weaponList[num1] : "N/A";
             let weapon2 = num2 < weaponList.length ? weaponList[num2] : "N/A";
             
@@ -1046,10 +1124,10 @@
             let lore1 = num1 < loreList.length ? loreList[num1] : "N/A";
             let lore2 = num2 < loreList.length ? loreList[num2] : "N/A";
             
-            // Get professions from lists - changed to let for weird world reassignment
+            // Get professions from lists
             let prof1 = num1 < profList.length ? profList[num1] : "+0 Bonus";
             let prof2 = num2 < profList.length ? profList[num2] : "+0 Bonus";
-
+            
             // Get weird world professions if toggle is on
             if (weirdWorldToggle.checked) {
                 if (num1 >= maxRegularIndex) {
@@ -1065,7 +1143,7 @@
                     }
                 }
             }
-
+            
             // Process and combine professions
             const combinedProfessions = combineProfessions(prof1, prof2);
             profBox.textContent = combinedProfessions;
@@ -1102,17 +1180,32 @@
                 loreBox.innerHTML = `${lore1}<br><br>${lore2}`;
             }
             
-            // NEW STAT LOGIC: Apply stat changes first
-            if (item1.statEffects) applyStatChanges(item1.statEffects);
-            if (item2.statEffects) applyStatChanges(item2.statEffects);
+            // Add items to equipped items list if they are valid
+            equippedItems = [];
+            if (item1 && item1.name !== "N/A") {
+                equippedItems.push(item1);
+            }
+            if (item2 && item2.name !== "N/A") {
+                equippedItems.push(item2);
+            }
             
-            // Then apply attribute changes (including any direct health bonuses)
-            if (item1.attributeEffects) applyAttributeChanges(item1.attributeEffects);
-            if (item2.attributeEffects) applyAttributeChanges(item2.attributeEffects);
-
-            updateImages(num1, num2);
+            // Process all effects from equipped items
+            processItemEffects();
+            
+            // Set initial health and mana to max if this is the first load
+            if (currentHealth === baseAttributes.health) {
+                currentHealth = maxHealth;
+            }
+            if (currentMana === baseAttributes.mana) {
+                currentMana = maxMana;
+            }
+            
             // Update displays
             updateStatDisplays();
+            
+            if (typeof updateImages === 'function') {
+                updateImages(num1, num2);
+            }
         }
 
         // Helper function to format item text with stats
