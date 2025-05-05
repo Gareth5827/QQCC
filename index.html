@@ -979,18 +979,27 @@
 
         // Function to apply attribute changes (from items)
         function applyAttributeChanges(attributeChanges) {
+            // First update base attributes from stats
+            updateAttributesFromStats();
+            
             // Apply item bonuses to both attributes and max values
             for (const [attribute, value] of Object.entries(attributeChanges)) {
-                attributes[attribute] += value;
+                // Capitalize the first letter to match attribute names (e.g., "health" -> "Health")
+                const capitalizedAttr = attribute.charAt(0).toUpperCase() + attribute.slice(1);
+                
+                // Apply the bonus
+                if (attributes.hasOwnProperty(capitalizedAttr)) {
+                    attributes[capitalizedAttr] += value;
+                }
             }
             
-            // Calculate final max values after all bonuses are applied
+            // Calculate final max values after all bonuses
             maxHealth = attributes.health;
             maxMana = attributes.mana;
             
-            // Set current values (without exceeding max)
-            currentHealth = Math.min(maxHealth, currentHealth);
-            currentMana = Math.min(maxMana, currentMana);
+            // Ensure current values don't exceed max
+            currentHealth = Math.min(currentHealth, maxHealth);
+            currentMana = Math.min(currentMana, maxMana);
         }
         
         // Function to perform a reroll
