@@ -1027,6 +1027,12 @@
             currentHealth = Math.min(currentHealth, maxHealth);
             currentMana = Math.min(currentMana, maxMana);
         }
+
+        function AdjustHealthMana () {
+            console.log("--- AdjustHealthMana called! ---");
+            currentHealth = maxHealth;
+            currentMana = maxMana;
+        }
         
         // Function to perform a reroll
         function reroll() {
@@ -1092,12 +1098,6 @@
                 }
 
                 AdjustHealthMana();
-            }
-
-        function AdjustHealthMana () {
-            console.log("--- AdjustHealthMana called! ---");
-                currentHealth = maxHealth;
-                currentMana = maxMana;
             }
 
             // Process and combine professions
