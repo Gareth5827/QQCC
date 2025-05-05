@@ -905,10 +905,10 @@
             attributes = JSON.parse(JSON.stringify(baseAttributes));
             
             // Reset current and max health/mana (they'll be recalculated during reroll)
-            currentHealth = baseAttributes.health;
             maxHealth = baseAttributes.health;
-            currentMana = baseAttributes.mana;
+            currentHealth = maxHealth;
             maxMana = baseAttributes.mana;
+            currentMana = maxMana;
         
             // Update stat displays
             updateStatDisplays();
@@ -933,8 +933,8 @@
             pwrStat.textContent = `PWR: ${stats.PWR > 0 ? '+' : ''}${stats.PWR}`;
             
             // Update attribute displays with current/max values
-            healthStat.textContent = `Health: ${currentHealth} / ${maxHealth}`;
-            manaStat.textContent = `Mana: ${currentMana} / ${maxMana}`;
+            healthStat.textContent = `Health: ${maxHealth} / ${currentHealth}`;
+            manaStat.textContent = `Mana: ${maxMana} / ${currentMana}`;
             manaRegenStat.textContent = `Mana Regen: ${attributes.manaRegen}`;
             spiritStat.textContent = `Spirit: ${attributes.spirit}`;
             swiftnessStat.textContent = `Swiftness: ${attributes.swiftness}`;
