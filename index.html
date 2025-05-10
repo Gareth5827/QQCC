@@ -121,6 +121,64 @@
             grid-template-columns: 1fr 1fr;
             gap: 30px;
         }
+                /* Dice Roller CSS */
+        .dice-roller-section {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .dice-container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+        
+        .dice-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .dice-input label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .dice-input-field {
+            width: 50px;
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        
+        .dice-roll-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 15px;
+        }
+        
+        .dice-roll-button:hover {
+            background-color: #45a049;
+        }
+        
+        .dice-result-box {
+            display: inline-block;
+            background-color: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 3px;
+            font-size: 18px;
+            min-width: 100px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -215,6 +273,41 @@
                 </div>
             </div>
         </div> <!-- Closing stats-attributes-container div -->
+    
+        <!-- Dice Roller Section -->
+    <div class="dice-roller-section" style="margin-top: 30px;">
+        <h2>Dice Roller</h2>
+        <div class="dice-container">
+            <div class="dice-input">
+                <label>D4</label>
+                <input type="number" min="0" value="0" id="d4Input" class="dice-input-field">
+            </div>
+            <div class="dice-input">
+                <label>D6</label>
+                <input type="number" min="0" value="0" id="d6Input" class="dice-input-field">
+            </div>
+            <div class="dice-input">
+                <label>D8</label>
+                <input type="number" min="0" value="0" id="d8Input" class="dice-input-field">
+            </div>
+            <div class="dice-input">
+                <label>D10</label>
+                <input type="number" min="0" value="0" id="d10Input" class="dice-input-field">
+            </div>
+            <div class="dice-input">
+                <label>D12</label>
+                <input type="number" min="0" value="0" id="d12Input" class="dice-input-field">
+            </div>
+            <div class="dice-input">
+                <label>D20</label>
+                <input type="number" min="0" value="0" id="d20Input" class="dice-input-field">
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 15px;">
+            <button id="rollButton" class="dice-roll-button">Roll</button>
+            <div class="dice-result-box" id="diceResultBox">Total: 0</div>
+        </div>
+    </div>
 
     <!-- Image Section -->
     <div class="image-section" style="margin-top: 30px;">
@@ -276,6 +369,99 @@
             50: ["EnergyTransfer", "SpiritArmour", "BlessingOfTheDamned", "WanderersRing"]
             // Continue with all other slots...
         };
+                // Dice roller elements
+        const d4Input = document.getElementById('d4Input');
+        const d6Input = document.getElementById('d6Input');
+        const d8Input = document.getElementById('d8Input');
+        const d10Input = document.getElementById('d10Input');
+        const d12Input = document.getElementById('d12Input');
+        const d20Input = document.getElementById('d20Input');
+        const rollButton = document.getElementById('rollButton');
+        const diceResultBox = document.getElementById('diceResultBox');
+
+                // Function to handle dice rolling
+        function rollDice() {
+            console.log("--- Dice Roller Debug ---");
+            
+            // Get input values
+            const d4Count = parseInt(d4Input.value) || 0;
+            const d6Count = parseInt(d6Input.value) || 0;
+            const d8Count = parseInt(d8Input.value) || 0;
+            const d10Count = parseInt(d10Input.value) || 0;
+            const d12Count = parseInt(d12Input.value) || 0;
+            const d20Count = parseInt(d20Input.value) || 0;
+            
+            console.log("Input counts:", {
+                d4: d4Count,
+                d6: d6Count,
+                d8: d8Count,
+                d10: d10Count,
+                d12: d12Count,
+                d20: d20Count
+            });
+            
+            // Roll dice
+            const d4Results = rollDie(4, d4Count);
+            const d6Results = rollDie(6, d6Count);
+            const d8Results = rollDie(8, d8Count);
+            const d10Results = rollDie(10, d10Count);
+            const d12Results = rollDie(12, d12Count);
+            const d20Results = rollDie(20, d20Count);
+            
+            console.log("Roll results:", {
+                d4: d4Results,
+                d6: d6Results,
+                d8: d8Results,
+                d10: d10Results,
+                d12: d12Results,
+                d20: d20Results
+            });
+            
+            // Calculate totals
+            const d4Total = d4Results.reduce((sum, val) => sum + val, 0);
+            const d6Total = d6Results.reduce((sum, val) => sum + val, 0);
+            const d8Total = d8Results.reduce((sum, val) => sum + val, 0);
+            const d10Total = d10Results.reduce((sum, val) => sum + val, 0);
+            const d12Total = d12Results.reduce((sum, val) => sum + val, 0);
+            const d20Total = d20Results.reduce((sum, val) => sum + val, 0);
+            
+            const grandTotal = d4Total + d6Total + d8Total + d10Total + d12Total + d20Total;
+            
+            console.log("Totals:", {
+                d4: d4Total,
+                d6: d6Total,
+                d8: d8Total,
+                d10: d10Total,
+                d12: d12Total,
+                d20: d20Total,
+                grandTotal: grandTotal
+            });
+            
+            // Build result text
+            let resultText = `Total: ${grandTotal}`;
+            
+            // Add individual rolls if any were made
+            if (grandTotal > 0) {
+                resultText += "<br><small>";
+                const parts = [];
+                
+                if (d4Results.length > 0) parts.push(`D4: ${d4Results.join(', ')}`);
+                if (d6Results.length > 0) parts.push(`D6: ${d6Results.join(', ')}`);
+                if (d8Results.length > 0) parts.push(`D8: ${d8Results.join(', ')}`);
+                if (d10Results.length > 0) parts.push(`D10: ${d10Results.join(', ')}`);
+                if (d12Results.length > 0) parts.push(`D12: ${d12Results.join(', ')}`);
+                if (d20Results.length > 0) parts.push(`D20: ${d20Results.join(', ')}`);
+                
+                resultText += parts.join(' | ');
+                resultText += "</small>";
+            }
+            
+            // Update result box
+            diceResultBox.innerHTML = resultText;
+        }
+        
+        // Event listener for roll button
+        rollButton.addEventListener('click', rollDice);
 
         // Function to set image with rare chance
         function setImageWithRareChance(elementId, imageName) {
