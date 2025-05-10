@@ -378,7 +378,15 @@
         const d20Input = document.getElementById('d20Input');
         const rollButton = document.getElementById('rollButton');
         const diceResultBox = document.getElementById('diceResultBox');
-
+        
+        // Function to roll a single die
+        function rollDie(sides, count) {
+            const results = [];
+            for (let i = 0; i < count; i++) {
+                results.push(Math.floor(Math.random() * sides) + 1);
+            }
+            return results;
+        }
                 // Function to handle dice rolling
         function rollDice() {
             console.log("--- Dice Roller Debug ---");
