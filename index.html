@@ -387,7 +387,8 @@
             }
             return results;
         }
-                // Function to handle dice rolling
+        
+        // Function to handle dice rolling
         function rollDice() {
             console.log("--- Dice Roller Debug ---");
             
@@ -466,6 +467,14 @@
             
             // Update result box
             diceResultBox.innerHTML = resultText;
+            
+            // Reset all input fields to 0
+            d4Input.value = '0';
+            d6Input.value = '0';
+            d8Input.value = '0';
+            d10Input.value = '0';
+            d12Input.value = '0';
+            d20Input.value = '0';
         }
         
         // Event listener for roll button
