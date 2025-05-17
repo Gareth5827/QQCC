@@ -472,8 +472,9 @@
         }
         
         function parseActionCosts(text) {
-            const tpMatch = text.match(/\[(\d+) TP\]/);
-            const manaMatch = text.match(/(\d+) Mana\]/);
+            // Handle both formats: "[2 TP, 6 Mana]" and "[6 Mana] OR [2 TP]"
+            const tpMatch = text.match(/\[(\d+) TP(?:,|\]| OR)/); // Updated regex
+            const manaMatch = text.match(/(\d+) Mana(?:,|\]| OR)/);
             
             return {
                 tpCost: tpMatch ? parseInt(tpMatch[1]) : 0,
