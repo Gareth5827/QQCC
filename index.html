@@ -179,6 +179,54 @@
             min-width: 100px;
             text-align: center;
         }
+                /* Button Layer Styles */
+        .button-layer {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .button-layer h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #444;
+        }
+        
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .action-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            min-width: 120px;
+        }
+        
+        .action-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .action-button.weapon {
+            background-color: #2196F3;
+        }
+        
+        .action-button.spell {
+            background-color: #9C27B0;
+        }
+        
+        .action-button.passive {
+            background-color: #FF9800;
+        }
     </style>
 </head>
 <body>
@@ -271,6 +319,31 @@
                         <input type="radio" name="resourceType" id="manaToggle"> Mana
                     </label>
                 </div>
+                    <!-- TP Display -->
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <div style="display: inline-block; background-color: #f0f0f0; padding: 8px 15px; border-radius: 3px; font-size: 18px;">
+                        TP: <span id="tpDisplay">6</span>/6
+                    </div>
+                    <div style="display: inline-block; background-color: #f0f0f0; padding: 8px 15px; border-radius: 3px; font-size: 18px; margin-left: 10px;">
+                        Mana: <span id="manaDisplay">0</span>/<span id="maxManaDisplay">0</span>
+                    </div>
+                </div>
+                
+                <!-- Button Layers -->
+                <div class="button-layer" id="layer1">
+                    <h3>Layer 1 Actions</h3>
+                    <div class="button-container" id="layer1Buttons"></div>
+                </div>
+                
+                <div class="button-layer" id="layer2">
+                    <h3>Layer 2 Actions</h3>
+                    <div class="button-container" id="layer2Buttons"></div>
+                </div>
+                
+                <!-- End Turn Button -->
+                <div style="text-align: center; margin-top: 20px;">
+                    <button id="endTurnButton" class="manager-button">End Turn</button>
+                </div>
             </div>
         </div> <!-- Closing stats-attributes-container div -->
     
@@ -357,6 +430,18 @@
         let maxHealth = 0;
         let currentMana = 0;
         let maxMana = 0;
+        // Resource Manager Variables
+        let currentTP = 6;
+        let weaponUsed = false;
+        let currentRollNumbers = [0, 0];
+        
+        // DOM Elements for Resource Manager
+        const tpDisplay = document.getElementById('tpDisplay');
+        const manaDisplay = document.getElementById('manaDisplay');
+        const maxManaDisplay = document.getElementById('maxManaDisplay');
+        const layer1Buttons = document.getElementById('layer1Buttons');
+        const layer2Buttons = document.getElementById('layer2Buttons');
+        const endTurnButton = document.getElementById('endTurnButton');
 
         // Image mapping for each slot
         const slotImageMap = {
@@ -378,6 +463,153 @@
         const d20Input = document.getElementById('d20Input');
         const rollButton = document.getElementById('rollButton');
         const diceResultBox = document.getElementById('diceResultBox');
+
+        // Function to update resource displays
+        function updateResourceDisplays() {
+            tpDisplay.textContent = currentTP;
+            manaDisplay.textContent = currentMana;
+            maxManaDisplay.textContent = maxMana;
+        }
+        
+        function parseActionCosts(text) {
+            const tpMatch = text.match(/\[(\d+) TP\]/);
+            const manaMatch = text.match(/(\d+) Mana\]/);
+            
+            return {
+                tpCost: tpMatch ? parseInt(tpMatch[1]) : 0,
+                manaCost: manaMatch ? parseInt(manaMatch[1]) : 0,
+                isWeapon: text.includes('(Weapon)')
+            };
+        }
+        
+        // Function to create action buttons
+        function createActionButtons() {
+            // Clear existing buttons
+            layer1Buttons.innerHTML = '';
+            layer2Buttons.innerHTML = '';
+            
+            // Create buttons for layer 1 (first roll number)
+            createButtonsForLayer(currentRollNumbers[0], layer1Buttons);
+            
+            // Create buttons for layer 2 (second roll number)
+            createButtonsForLayer(currentRollNumbers[1], layer2Buttons);
+            
+            // Update button states
+            updateButtonStates();
+        }
+        
+        function createButtonsForLayer(rollNumber, container) {
+            // Clear previous buttons (if any)
+            container.innerHTML = '';
+        
+            // Process Weapon if available
+            if (weaponList[rollNumber]) {
+                const weaponText = weaponList[rollNumber];
+                const weaponName = weaponText.split(':')[0].trim();
+                const costs = parseActionCosts(weaponText);
+                
+                const btn = document.createElement('button');
+                btn.className = 'action-button weapon';
+                btn.textContent = `⚔️ ${weaponName}`;
+                btn.dataset.tpCost = costs.tpCost;
+                btn.dataset.manaCost = costs.manaCost;
+                btn.dataset.isWeapon = 'true';
+                btn.title = weaponText; // Show full description on hover
+                
+                btn.addEventListener('click', () => {
+                    useAction(costs.tpCost, costs.manaCost, true);
+                    updateResourceDisplays();
+                    updateButtonStates();
+                });
+                
+                container.appendChild(btn);
+            }
+        
+            // Process Spell if available
+            if (spellList[rollNumber]) {
+                const spellText = spellList[rollNumber];
+                const spellName = spellText.split(':')[0] || spellText.split(']')[0].trim();
+                const costs = parseActionCosts(spellText);
+                
+                const btn = document.createElement('button');
+                btn.className = 'action-button spell';
+                btn.textContent = `✨ ${spellName}`;
+                btn.dataset.tpCost = costs.tpCost;
+                btn.dataset.manaCost = costs.manaCost;
+                btn.dataset.isWeapon = 'false';
+                btn.title = spellText;
+                
+                btn.addEventListener('click', () => {
+                    useAction(costs.tpCost, costs.manaCost, false);
+                    updateResourceDisplays();
+                    updateButtonStates();
+                });
+                
+                container.appendChild(btn);
+            }
+        
+            // Process Passive (display only)
+            if (passiveList[rollNumber]) {
+                const passiveText = passiveList[rollNumber];
+                const passiveName = passiveText.split(':')[0] || passiveText;
+                
+                const btn = document.createElement('button');
+                btn.className = 'action-button passive';
+                btn.textContent = `🛡️ ${passiveName}`;
+                btn.disabled = true; // Passives are automatic
+                btn.title = passiveText;
+                
+                container.appendChild(btn);
+            }
+        }
+        
+        // Function to use an action (deduct costs)
+        function useAction(tpCost, manaCost, isWeapon) {
+            currentTP = Math.max(0, currentTP - tpCost);
+            currentMana = Math.max(0, currentMana - manaCost);
+            
+            if (isWeapon) {
+                weaponUsed = true;
+            }
+        }
+        
+        // Function to update button states (enable/disable based on resources)
+        function updateButtonStates() {
+            const buttons = document.querySelectorAll('.action-button');
+            
+            buttons.forEach(button => {
+                const tpCost = parseInt(button.dataset.tpCost) || 0;
+                const manaCost = parseInt(button.dataset.manaCost) || 0;
+                const isWeapon = button.dataset.isWeapon === 'true';
+                
+                // Disable if:
+                // 1. Not enough TP
+                // 2. Not enough Mana
+                // 3. It's a weapon and weaponUsed is true
+                button.disabled = 
+                    currentTP < tpCost || 
+                    currentMana < manaCost || 
+                    (isWeapon && weaponUsed);
+            });
+        }
+        
+        // Function to end turn
+        function endTurn() {
+            // Reset TP and weapon usage
+            currentTP = 6;
+            weaponUsed = false;
+            
+            // Regen mana
+            currentMana = Math.min(maxMana, currentMana + attributes.manaregen);
+            
+            // Update displays and buttons
+            updateResourceDisplays();
+            updateButtonStates();
+        }
+        
+        // Event listener for end turn button
+        endTurnButton.addEventListener('click', endTurn);
+
         
         // Function to roll a single die
         function rollDie(sides, count) {
@@ -1246,6 +1478,9 @@ const profList = [
             spiritStat.textContent = `Spirit: ${attributes.spirit}`;
             swiftnessStat.textContent = `Swiftness: ${attributes.swiftness}`;
             advantageStat.textContent = `Advantage: ${attributes.advantage}`;
+
+            // Update resource displays when stats change
+            updateResourceDisplays();
         }
         
         // Function to apply stat changes (handles opposites)
@@ -1368,6 +1603,9 @@ const profList = [
             while (num2 === num1) {
                 num2 = getRandomNumber(maxIndex);
             }
+
+            // Store the roll numbers
+            currentRollNumbers = [num1, num2];
             
             // Get items from lists - changed these to let since we might reassign them for weird world
             let weapon1 = num1 < weaponList.length ? weaponList[num1] : "N/A";
@@ -1486,6 +1724,14 @@ const profList = [
             updateImages(num1, num2);
             // Update displays
             updateStatDisplays();
+
+            // Create action buttons and update displays
+            createActionButtons();
+            updateResourceDisplays();
+            
+            // Reset turn state
+            currentTP = 6;
+            weaponUsed = false;
         }
 
         // Helper function to format item text with stats
