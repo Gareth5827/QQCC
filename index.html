@@ -623,6 +623,7 @@
             
             // Update displays and buttons
             updateResourceDisplays();
+            updateStatDisplays();
             updateButtonStates();
         }
         
@@ -1610,7 +1611,7 @@ const profList = [
             resetStatsAndAttributes();
             
             // Determine the maximum index based on toggle
-            const maxRegularIndex = 59; // Assuming you have 60 items (0-59)
+            const maxRegularIndex = 68; // Assuming you have 69 items (0-68)
             const maxWeirdWorldIndex = 69; // Assuming you have 70 items (0-69)
             
             const maxIndex = weirdWorldToggle.checked ? maxWeirdWorldIndex : maxRegularIndex;
