@@ -523,62 +523,74 @@
         
             // Process Weapon if available
             if (weaponList[rollNumber]) {
-                const weaponText = weaponList[rollNumber];
-                const weaponName = weaponText.split(':')[0].trim();
-                const costs = parseActionCosts(weaponText);
-                
-                const btn = document.createElement('button');
-                btn.className = 'action-button weapon';
-                btn.textContent = `⚔️ ${weaponName}`;
-                btn.dataset.tpCost = costs.tpCost;
-                btn.dataset.manaCost = costs.manaCost;
-                btn.dataset.isWeapon = 'true';
-                btn.title = weaponText; // Show full description on hover
-                
-                btn.addEventListener('click', () => {
-                    useAction(costs.tpCost, costs.manaCost, true);
-                    updateResourceDisplays();
-                    updateButtonStates();
+                const weaponTexts = weaponList[rollNumber].split(/\s{3,}/); // Split by three or more spaces
+                weaponTexts.forEach(weaponText => {
+                    if (weaponText.trim()) { // Only process if not empty
+                        const weaponName = weaponText.split(':')[0].trim();
+                        const costs = parseActionCosts(weaponText);
+                        
+                        const btn = document.createElement('button');
+                        btn.className = 'action-button weapon';
+                        btn.textContent = `⚔️ ${weaponName}`;
+                        btn.dataset.tpCost = costs.tpCost;
+                        btn.dataset.manaCost = costs.manaCost;
+                        btn.dataset.isWeapon = 'true';
+                        btn.title = weaponText; // Show full description on hover
+                        
+                        btn.addEventListener('click', () => {
+                            useAction(costs.tpCost, costs.manaCost, true);
+                            updateResourceDisplays();
+                            updateButtonStates();
+                        });
+                        
+                        container.appendChild(btn);
+                    }
                 });
-                
-                container.appendChild(btn);
             }
         
             // Process Spell if available
             if (spellList[rollNumber]) {
-                const spellText = spellList[rollNumber];
-                const spellName = spellText.split(':')[0] || spellText.split(']')[0].trim();
-                const costs = parseActionCosts(spellText);
-                
-                const btn = document.createElement('button');
-                btn.className = 'action-button spell';
-                btn.textContent = `✨ ${spellName}`;
-                btn.dataset.tpCost = costs.tpCost;
-                btn.dataset.manaCost = costs.manaCost;
-                btn.dataset.isWeapon = 'false';
-                btn.title = spellText;
-                
-                btn.addEventListener('click', () => {
-                    useAction(costs.tpCost, costs.manaCost, false);
-                    updateResourceDisplays();
-                    updateButtonStates();
+                const spellTexts = spellList[rollNumber].split(/\s{3,}/); // Split by three or more spaces
+                spellTexts.forEach(spellText => {
+                    if (spellText.trim()) { // Only process if not empty
+                        const spellName = spellText.split(':')[0] || spellText.split(']')[0].trim();
+                        const costs = parseActionCosts(spellText);
+                        
+                        const btn = document.createElement('button');
+                        btn.className = 'action-button spell';
+                        btn.textContent = `✨ ${spellName}`;
+                        btn.dataset.tpCost = costs.tpCost;
+                        btn.dataset.manaCost = costs.manaCost;
+                        btn.dataset.isWeapon = 'false';
+                        btn.title = spellText;
+                        
+                        btn.addEventListener('click', () => {
+                            useAction(costs.tpCost, costs.manaCost, false);
+                            updateResourceDisplays();
+                            updateButtonStates();
+                        });
+                        
+                        container.appendChild(btn);
+                    }
                 });
-                
-                container.appendChild(btn);
             }
         
             // Process Passive (display only)
             if (passiveList[rollNumber]) {
-                const passiveText = passiveList[rollNumber];
-                const passiveName = passiveText.split(':')[0] || passiveText;
-                
-                const btn = document.createElement('button');
-                btn.className = 'action-button passive';
-                btn.textContent = `🛡️ ${passiveName}`;
-                btn.disabled = true; // Passives are automatic
-                btn.title = passiveText;
-                
-                container.appendChild(btn);
+                const passiveTexts = passiveList[rollNumber].split(/\s{3,}/); // Split by three or more spaces
+                passiveTexts.forEach(passiveText => {
+                    if (passiveText.trim()) { // Only process if not empty
+                        const passiveName = passiveText.split(':')[0] || passiveText;
+                        
+                        const btn = document.createElement('button');
+                        btn.className = 'action-button passive';
+                        btn.textContent = `🛡️ ${passiveName}`;
+                        btn.disabled = true; // Passives are automatic
+                        btn.title = passiveText;
+                        
+                        container.appendChild(btn);
+                    }
+                });
             }
         }
         
