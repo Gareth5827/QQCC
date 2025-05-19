@@ -116,6 +116,16 @@
             margin-right: 5px;
         }
 
+        #universalButtons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        #universalButtons .action-button {
+            min-width: 120px;
+        }
+
         .stats-attributes-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -318,6 +328,9 @@
                     <label>
                         <input type="radio" name="resourceType" id="manaToggle"> Mana
                     </label>
+                    <label>
+                        <input type="radio" name="resourceType" id="tpToggle"> TP
+                    </label>
                 </div>
                     <!-- TP Display -->
                 <div style="text-align: center; margin-bottom: 15px;">
@@ -331,13 +344,18 @@
                 
                 <!-- Button Layers -->
                 <div class="button-layer" id="layer1">
-                    <h3>Layer 1 Actions</h3>
+                    <h3>Roll 1 Actions</h3>
                     <div class="button-container" id="layer1Buttons"></div>
                 </div>
                 
                 <div class="button-layer" id="layer2">
-                    <h3>Layer 2 Actions</h3>
+                    <h3>Roll 2 Actions</h3>
                     <div class="button-container" id="layer2Buttons"></div>
+                </div>
+
+                <div class="button-layer" id="universalActions">
+                    <h3>Universal Actions</h3>
+                    <div class="button-container" id="universalButtons"></div>
                 </div>
                 
                 <!-- End Turn Button -->
@@ -1420,6 +1438,7 @@ const profList = [
         const loseButton = document.getElementById('loseButton');
         const healthToggle = document.getElementById('healthToggle');
         const manaToggle = document.getElementById('manaToggle');
+        const tpToggle = document.getElementById('tpToggle');
         
         // Function to get a random number within a range
         function getRandomNumber(max, min = 0) {
@@ -1728,6 +1747,7 @@ const profList = [
 
             // Create action buttons and update displays
             createActionButtons();
+            createUniversalButtons();
             updateResourceDisplays();
             
             // Reset turn state
@@ -1811,20 +1831,96 @@ const profList = [
             if (healthToggle.checked) {
                 // Change health
                 currentHealth += changeAmount;
-                // Ensure health stays within bounds
                 currentHealth = Math.max(0, Math.min(currentHealth, maxHealth));
-            } else {
+            } else if (manaToggle.checked) {
                 // Change mana
                 currentMana += changeAmount;
-                // Ensure mana stays within bounds
                 currentMana = Math.max(0, Math.min(currentMana, maxMana));
+            } else if (tpToggle.checked) {
+                // Change TP
+                currentTP += changeAmount;
+                currentTP = Math.max(0, Math.min(currentTP, 6));
             }
             
-            // Update displays
             updateStatDisplays();
-            
-            // Clear the input
+            updateResourceDisplays();
+            updateButtonStates();
             resourceInput.value = '';
+        }
+
+                // Add function to create universal action buttons
+        function createUniversalButtons() {
+            const container = document.getElementById('universalButtons');
+            container.innerHTML = '';
+            
+            // Walk button
+            const walkBtn = document.createElement('button');
+            walkBtn.className = 'action-button';
+            walkBtn.textContent = 'Walk';
+            walkBtn.title = 'Move 10 FT';
+            walkBtn.dataset.tpCost = '1';
+            walkBtn.addEventListener('click', () => {
+                useAction(1, 0, false);
+                updateResourceDisplays();
+                updateButtonStates();
+            });
+            container.appendChild(walkBtn);
+            
+            // Run button
+            const runBtn = document.createElement('button');
+            runBtn.className = 'action-button';
+            runBtn.textContent = 'Run';
+            runBtn.title = 'Move 20 FT';
+            runBtn.dataset.tpCost = '2';
+            runBtn.addEventListener('click', () => {
+                useAction(2, 0, false);
+                updateResourceDisplays();
+                updateButtonStates();
+            });
+            container.appendChild(runBtn);
+            
+            // Sprint button
+            const sprintBtn = document.createElement('button');
+            sprintBtn.className = 'action-button';
+            sprintBtn.textContent = 'Sprint';
+            sprintBtn.title = 'Move 30 FT';
+            sprintBtn.dataset.tpCost = '3';
+            sprintBtn.addEventListener('click', () => {
+                useAction(3, 0, false);
+                updateResourceDisplays();
+                updateButtonStates();
+            });
+            container.appendChild(sprintBtn);
+            
+            // Unarmed attack button
+            const unarmedBtn = document.createElement('button');
+            unarmedBtn.className = 'action-button weapon';
+            unarmedBtn.textContent = 'Unarmed Attack';
+            unarmedBtn.title = 'Deal 1D6 + PWR damage';
+            unarmedBtn.dataset.tpCost = '1';
+            unarmedBtn.dataset.isWeapon = 'true';
+            unarmedBtn.addEventListener('click', () => {
+                useAction(1, 0, true);
+                updateResourceDisplays();
+                updateButtonStates();
+            });
+            container.appendChild(unarmedBtn);
+            
+            // Regenerate button
+            const regenBtn = document.createElement('button');
+            regenBtn.className = 'action-button';
+            regenBtn.textContent = 'Regenerate';
+            regenBtn.title = 'Heal 3 Health and Mana';
+            regenBtn.dataset.tpCost = '1';
+            regenBtn.addEventListener('click', () => {
+                useAction(1, 0, false);
+                currentHealth = Math.min(maxHealth, currentHealth + 3);
+                currentMana = Math.min(maxMana, currentMana + 3);
+                updateResourceDisplays();
+                updateButtonStates();
+                updateStatDisplays();
+            });
+            container.appendChild(regenBtn);
         }
         
         // Event listeners for manager section
