@@ -803,7 +803,7 @@
             
             if (isRare) {
                 // Try rare image first
-                const rareImagePath = `Images/RareImages/Rare${imageName}.png`;
+                const rareImagePath = `Images/RareImages/{imageName}.png`;
                 imgElement.onerror = function() {
                     // If rare image fails, try normal image
                     const normalImagePath = `Images/${imageName}.png`;
