@@ -799,7 +799,7 @@
         // Function to set image with rare chance
         function setImageWithRareChance(elementId, imageName) {
             const imgElement = document.getElementById(elementId);
-            const isRare = Math.random() < 0.50; // 50% chance for rare
+            const isRare = Math.random() < 0.01; // 1% chance for rare
             
             if (isRare) {
                 console.log("--- RARE HIT! ---")
