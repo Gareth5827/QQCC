@@ -802,8 +802,8 @@
             const isRare = Math.random() < 0.50; // 50% chance for rare
             
             if (isRare) {
-                // Try rare image first
-                const rareImagePath = `Images/RareImages/{imageName}.png`;
+                // Try rare image first - using proper template literal
+                const rareImagePath = `Images/RareImages/${imageName}.png`;
                 imgElement.onerror = function() {
                     // If rare image fails, try normal image
                     const normalImagePath = `Images/${imageName}.png`;
