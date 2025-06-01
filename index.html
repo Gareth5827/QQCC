@@ -238,7 +238,7 @@
             background-color: #FF9800;
         }
 
-                /* Extra Action Button Styles */
+        /* Extra Action Button Styles */
         .extra-action-button {
             position: relative;
             padding: 8px 25px 8px 12px;
@@ -251,6 +251,12 @@
             color: white;
             margin-right: 5px;
             margin-bottom: 5px;
+            transition: all 0.2s;
+        }
+        
+        .extra-action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         
         .extra-action-button .close-btn {
@@ -269,9 +275,42 @@
             padding: 0;
             cursor: pointer;
         }
-        
+
         .extra-action-button .close-btn:hover {
             background: rgba(0,0,0,0.4);
+        }
+        
+        .error-text {
+            color: red;
+            font-size: 14px;
+            margin-left: 10px;
+            display: none;
+        }
+        
+        /* Ensure tooltips show full description */
+        .extra-action-button:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            width: max-content;
+            max-width: 300px;
+            z-index: 100;
+            margin-bottom: 5px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .extra-action-button:hover::after {
+            opacity: 1;
         }
         
         .error-text {
@@ -1515,13 +1554,13 @@ const profList = [
             // Add more lore as needed
         ];
 
-                // Extra Actions List
+        // Updated Extra Actions List with new format
         const EAList = [
-            "FireBall:[Spell] [Enemy] [15 FT] Deal 1D8 + WIT Fire damage [1 TP, 14 Mana] [#FF5733] [Upgrade:+4 damage]",
-            "IceShard:[Spell] [Enemy] [20 FT] Deal 1D6 + WIT Ice damage [1 TP, 10 Mana] [#ADD8E6] [Upgrade:+3 damage]",
-            "HealingLight:[Spell] [Ally] [15 FT] Heal 1D8 + WIT health [1 TP, 12 Mana] [#90EE90] [Upgrade:+2 healing]",
-            "PowerStrike:(Weapon) [Attack] [Enemy] [10 FT] Deal 1D10 + PWR damage [2 TP] [#FFD700] [Weapon] [Upgrade:+3 damage]",
-            "ShadowStep:[Movement] Teleport to a space within 20 FT [2 TP, 8 Mana] [#800080] [Upgrade:-1 TP cost]"
+            "FireBall:[Spell] [Enemy] [15 FT] Deal 1D8 + WIT + (1) Fire damage and deal (2) Fire damage at the start of their turn [1 TP, 14 Mana] [#FF5733] [+4] [+2]",
+            "IceShard:[Spell] [Enemy] [20 FT] Deal 1D6 + WIT + (1) Ice damage and slow movement by (2) FT [1 TP, 10 Mana] [#ADD8E6] [+3] [+5]",
+            "HealingLight:[Spell] [Ally] [15 FT] Heal 1D8 + WIT + (1) health and grant (2) temporary HP [1 TP, 12 Mana] [#90EE90] [+2] [+3]",
+            "PowerStrike:(Weapon) [Attack] [Enemy] [10 FT] Deal 1D10 + PWR + (1) damage [2 TP] [#FFD700] [+3] [Weapon]",
+            "ShadowStep:[Movement] Teleport to a space within 20 + (1) FT [2 TP, 8 Mana] [#800080] [+5]"
         ];
         
         // Track added extra actions
@@ -1532,7 +1571,7 @@ const profList = [
         const EAAddButton = document.getElementById('EAAddButton');
         const extraActionsError = document.getElementById('extraActionsError');
         const extraActionsButtons = document.getElementById('extraActionsButtons');
-        
+
         // Function to create an extra action button
         function createExtraActionButton(name, data, level = 1) {
             const button = document.createElement('button');
@@ -1540,18 +1579,21 @@ const profList = [
             button.textContent = level > 1 ? `${name}+${level-1}` : name;
             button.style.backgroundColor = data.color;
             
+            // Calculate upgraded description
+            const upgradedDesc = applyUpgrades(data.description, data.upgrades, level-1);
+            
             // Parse action costs
-            const costs = parseActionCosts(data.description);
+            const costs = parseActionCosts(upgradedDesc);
             
             // Store button data
             button.dataset.name = name;
-            button.dataset.description = data.description;
+            button.dataset.baseDescription = data.description;
+            button.dataset.upgrades = JSON.stringify(data.upgrades);
             button.dataset.tpCost = costs.tpCost;
             button.dataset.manaCost = costs.manaCost;
             button.dataset.isWeapon = data.isWeapon ? 'true' : 'false';
             button.dataset.level = level;
-            button.dataset.upgrade = data.upgrade;
-            button.title = data.description; // Tooltip
+            button.title = upgradedDesc; // Tooltip shows upgraded description
             
             // Add close button
             const closeBtn = document.createElement('span');
@@ -1571,6 +1613,18 @@ const profList = [
             });
             
             return button;
+        }
+
+                // Function to apply upgrades to description
+        function applyUpgrades(description, upgrades, level) {
+            if (level < 1) return description;
+            
+            let result = description;
+            for (let i = 0; i < upgrades.length; i++) {
+                const upgradeValue = upgrades[i] * level;
+                result = result.replace(`(${i+1})`, upgradeValue);
+            }
+            return result;
         }
         
         // Function to add an extra action
@@ -1593,36 +1647,41 @@ const profList = [
                 return;
             }
             
-            // Parse action data
-            const [name, description, , , color, weapon, upgrade] = matchedAction.split(/\[([^\]]+)\]/).filter(Boolean);
-            const cleanName = name.replace(':', '').trim();
-            const cleanDesc = description.trim();
-            const cleanColor = color ? color.trim() : '#4CAF50';
-            const isWeapon = weapon && weapon.toLowerCase().includes('weapon');
-            const cleanUpgrade = upgrade ? upgrade.replace('Upgrade:', '').trim() : '';
+            // Parse action data with new format
+            const parts = matchedAction.split(/\[([^\]]+)\]/).filter(Boolean);
+            const namePart = parts[0].split(':');
+            const cleanName = namePart[0].trim();
+            const cleanDesc = namePart[1].trim();
+            
+            const color = parts[1] ? parts[1].trim() : '#4CAF50';
+            const upgrade1 = parts[2] ? parseInt(parts[2].replace('+', '')) : 0;
+            const upgrade2 = parts[3] ? (parts[3].toLowerCase().includes('weapon') ? 'weapon' : parseInt(parts[3].replace('+', ''))) : 0;
+            
+            const isWeapon = parts.some(p => p.toLowerCase().includes('weapon'));
+            const upgrades = [];
+            if (!isNaN(upgrade1)) upgrades.push(upgrade1);
+            if (!isNaN(upgrade2)) upgrades.push(upgrade2);
             
             const actionData = {
                 name: cleanName,
                 description: cleanDesc,
-                color: cleanColor,
+                color: color,
                 isWeapon: isWeapon,
-                upgrade: cleanUpgrade
+                upgrades: upgrades
             };
             
             // Check if action already exists
-            if (addedExtraActions[cleanName]) {
+            const existingButton = document.querySelector(`.extra-action-button[data-name="${cleanName}"]`);
+            if (existingButton) {
                 // Upgrade existing action
-                const existingButton = document.querySelector(`.extra-action-button[data-name="${cleanName}"]`);
-                if (existingButton) {
-                    const currentLevel = parseInt(existingButton.dataset.level) || 1;
-                    existingButton.dataset.level = currentLevel + 1;
-                    existingButton.textContent = `${cleanName}+${currentLevel}`;
-                    
-                    // Update description with upgrade (simple implementation)
-                    if (cleanUpgrade) {
-                        existingButton.title = `${cleanDesc} (Upgraded: ${cleanUpgrade})`;
-                    }
-                }
+                const currentLevel = parseInt(existingButton.dataset.level) || 1;
+                existingButton.dataset.level = currentLevel + 1;
+                existingButton.textContent = `${cleanName}+${currentLevel}`;
+                
+                // Update description with upgrades
+                const baseDesc = existingButton.dataset.baseDescription;
+                const upgrades = JSON.parse(existingButton.dataset.upgrades);
+                existingButton.title = applyUpgrades(baseDesc, upgrades, currentLevel);
             } else {
                 // Add new action
                 const button = createExtraActionButton(cleanName, actionData);
@@ -1633,13 +1692,13 @@ const profList = [
             EAInputField.value = '';
         }
         
-        // Function to remove an extra action
+        // Function to remove an extra action (even upgraded ones)
         function removeExtraAction(name) {
-            const button = document.querySelector(`.extra-action-button[data-name="${name}"]`);
-            if (button) {
+            const buttons = document.querySelectorAll(`.extra-action-button[data-name="${name}"]`);
+            buttons.forEach(button => {
                 button.remove();
-                delete addedExtraActions[name];
-            }
+            });
+            delete addedExtraActions[name];
         }
         
         // Event listeners for extra actions
@@ -2026,6 +2085,10 @@ const profList = [
             createActionButtons();
             createUniversalButtons();
             updateResourceDisplays();
+
+            // Clear Extra Actions
+            extraActionsButtons.innerHTML = '';
+            addedExtraActions = {};
             
             // Reset turn state
             currentTP = 6;
