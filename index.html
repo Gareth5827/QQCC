@@ -452,6 +452,8 @@
         let currentTP = 6;
         let weaponUsed = false;
         let currentRollNumbers = [0, 0];
+        let avoidList = [];
+        const MAX_AVOID_LIST_SIZE = 14;
         
         // DOM Elements for Resource Manager
         const tpDisplay = document.getElementById('tpDisplay');
@@ -1662,6 +1664,7 @@ const profList = [
             currentMana = maxMana;
         }
         
+
         // Function to perform a reroll
         function reroll() {
             // Clear all boxes
@@ -1681,17 +1684,23 @@ const profList = [
             
             const maxIndex = weirdWorldToggle.checked ? maxWeirdWorldIndex : maxRegularIndex;
             
-            // Get two different random numbers
-            let num1 = getRandomNumber(maxIndex);
-            let num2 = getRandomNumber(maxIndex);
+            // Get two different random numbers not in avoidList
+            let num1 = getRandomNumberAvoiding(maxIndex, avoidList);
+            let num2 = getRandomNumberAvoiding(maxIndex, avoidList);
             
             // Ensure they're different
             while (num2 === num1) {
-                num2 = getRandomNumber(maxIndex);
+                num2 = getRandomNumberAvoiding(maxIndex, avoidList);
             }
 
             // Store the roll numbers
             currentRollNumbers = [num1, num2];
+
+                        // Update avoidList (FIFO with max 14 entries)
+            avoidList.push(num1, num2);
+            while (avoidList.length > MAX_AVOID_LIST_SIZE) {
+                avoidList.shift(); // Remove oldest entries
+            }
 
             console.log("Rolled numbers:", num1, num2);
             
@@ -1729,6 +1738,28 @@ const profList = [
                         prof2 = weirdWorldProfList[weirdIndex];
                     }
                 }
+            }
+
+                        // Helper function to get random number avoiding certain values
+            function getRandomNumberAvoiding(max, avoidList) {
+                let num;
+                const availableNumbers = [];
+                
+                // Create list of available numbers
+                for (let i = 0; i <= max; i++) {
+                    if (!avoidList.includes(i)) {
+                        availableNumbers.push(i);
+                    }
+                }
+                
+                // If no available numbers (shouldn't happen with 69 max and 14 avoid)
+                if (availableNumbers.length === 0) {
+                    return getRandomNumber(max);
+                }
+                
+                // Get random index from available numbers
+                const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+                return availableNumbers[randomIndex];
             }
 
             // Process and combine professions
