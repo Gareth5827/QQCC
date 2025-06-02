@@ -237,77 +237,6 @@
         .action-button.passive {
             background-color: #FF9800;
         }
-
-        /* Extra Action Button Styles */
-        .extra-action-button {
-            position: relative;
-        }
-        
-        .extra-action-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        
-        .extra-action-button .close-btn {
-            position: absolute;
-            right: 5px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(0,0,0,0.2);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 10px;
-            line-height: 18px;
-            padding: 0;
-            cursor: pointer;
-        }
-
-        .extra-action-button .close-btn:hover {
-            background: rgba(0,0,0,0.4);
-        }
-        
-        .error-text {
-            color: red;
-            font-size: 14px;
-            margin-left: 10px;
-            display: none;
-        }
-        
-        /* Ensure tooltips show full description */
-        .extra-action-button:hover::after {
-            content: attr(data-description);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            white-space: pre-wrap;
-            width: max-content;
-            max-width: 300px;
-            z-index: 100;
-            margin-bottom: 5px;
-            font-size: 12px;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .extra-action-button:hover::after {
-            opacity: 1;
-        }
-        
-        .error-text {
-            color: red;
-            font-size: 14px;
-            margin-left: 10px;
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -429,18 +358,6 @@
                     <div class="button-container" id="universalButtons"></div>
                 </div>
                 
-                <!-- Extra Actions Section -->
-                <div class="button-layer" id="extraActions">
-                    <h3>Extra Actions 
-                        <span class="error-text" id="extraActionsError" style="display: none; color: red; margin-left: 10px;">Try something else!</span>
-                    </h3>
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <input type="text" id="EAInputField" placeholder="Enter action name..." style="flex-grow: 1; padding: 8px;">
-                        <button id="EAAddButton" class="manager-button">Add</button>
-                    </div>
-                    <div class="button-container" id="extraActionsButtons"></div>
-                </div>
-                
                 <!-- End Turn Button -->
                 <div style="text-align: center; margin-top: 20px;">
                     <button id="endTurnButton" class="manager-button">End Turn</button>
@@ -535,8 +452,6 @@
         let currentTP = 6;
         let weaponUsed = false;
         let currentRollNumbers = [0, 0];
-        let avoidList = [];
-        const MAX_AVOID_LIST_SIZE = 14;
         
         // DOM Elements for Resource Manager
         const tpDisplay = document.getElementById('tpDisplay');
@@ -627,32 +542,13 @@
         }
         
         function parseActionCosts(text) {
-            // Handle multiple formats:
-            // 1. "[2 TP, 6 Mana]"
-            // 2. "[6 Mana] OR [2 TP]"
-            // 3. "Some text [1 TP, 14 Mana] more text"
-            
-            // First try to find combined cost format
-            const combinedMatch = text.match(/\[(\d+) TP(?:,|\]| OR).*?(\d+) Mana\]/i);
-            if (combinedMatch) {
-                return {
-                    tpCost: parseInt(combinedMatch[1]) || 0,
-                    manaCost: parseInt(combinedMatch[2]) || 0,
-                    isWeapon: text.includes('(Weapon)')
-                };
-            }
-            
-            // Try to find separate TP cost
-            const tpMatch = text.match(/\[(\d+) TP(?:,|\]| OR)/i);
-            const tpCost = tpMatch ? parseInt(tpMatch[1]) : 0;
-            
-            // Try to find separate Mana cost
-            const manaMatch = text.match(/(\d+) Mana(?:,|\]| OR)/i);
-            const manaCost = manaMatch ? parseInt(manaMatch[1]) : 0;
+            // Handle both formats: "[2 TP, 6 Mana]" and "[6 Mana] OR [2 TP]"
+            const tpMatch = text.match(/\[(\d+) TP(?:,|\]| OR)/); // Updated regex
+            const manaMatch = text.match(/(\d+) Mana(?:,|\]| OR)/);
             
             return {
-                tpCost: tpCost,
-                manaCost: manaCost,
+                tpCost: tpMatch ? parseInt(tpMatch[1]) : 0,
+                manaCost: manaMatch ? parseInt(manaMatch[1]) : 0,
                 isWeapon: text.includes('(Weapon)')
             };
         }
@@ -1544,159 +1440,6 @@ const profList = [
             "You are a ranger!",
             // Add more lore as needed
         ];
-
-        // Updated Extra Actions List with new format
-        const EAList = [
-            "FireBall:[Spell] [Enemy] [15 FT] Deal 1D8 + WIT + (1) Fire damage and deal (2) Fire damage at the start of their turn [1 TP, 14 Mana] [#FF5733] [+4] [+2]",
-            "IceShard:[Spell] [Enemy] [20 FT] Deal 1D6 + WIT + (1) Ice damage and slow movement by (2) FT [1 TP, 10 Mana] [#ADD8E6] [+3] [+5]",
-            "HealingLight:[Spell] [Ally] [15 FT] Heal 1D8 + WIT + (1) health and grant (2) temporary HP [1 TP, 12 Mana] [#90EE90] [+2] [+3]",
-            "PowerStrike:(Weapon) [Attack] [Enemy] [10 FT] Deal 1D10 + PWR + (1) damage [2 TP] [#FFD700] [+3] [Weapon]",
-            "ShadowStep:[Movement] Teleport to a space within 20 + (1) FT [2 TP, 8 Mana] [#800080] [+5]"
-        ];
-        
-        // Track added extra actions
-        let addedExtraActions = {};
-        
-        // DOM elements for extra actions
-        const EAInputField = document.getElementById('EAInputField');
-        const EAAddButton = document.getElementById('EAAddButton');
-        const extraActionsError = document.getElementById('extraActionsError');
-        const extraActionsButtons = document.getElementById('extraActionsButtons');
-
-        // Function to create an extra action button
-        function createExtraActionButton(name, data, level = 1) {
-            const button = document.createElement('button');
-            button.className = 'extra-action-button';
-            button.textContent = level > 1 ? `${name}+${level-1}` : name;
-            button.style.backgroundColor = data.color;
-            
-            // Calculate upgraded description
-            const upgradedDesc = applyUpgrades(data.description, data.upgrades, level-1);
-            
-            // Parse action costs
-            const costs = parseActionCosts(upgradedDesc);
-            
-            // Store button data - using same approach as other action buttons
-            button.dataset.name = name;
-            button.dataset.tpCost = costs.tpCost;
-            button.dataset.manaCost = costs.manaCost;
-            button.dataset.isWeapon = costs.isWeapon ? 'true' : 'false';
-            button.dataset.level = level;
-            button.title = upgradedDesc; // This is what makes the tooltip work like other buttons
-            
-            // Add close button
-            const closeBtn = document.createElement('span');
-            closeBtn.className = 'close-btn';
-            closeBtn.innerHTML = '×';
-            closeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                removeExtraAction(name);
-            });
-            button.appendChild(closeBtn);
-            
-            // Click handler - matches other action buttons
-            button.addEventListener('click', () => {
-                useAction(costs.tpCost, costs.manaCost, costs.isWeapon);
-                updateResourceDisplays();
-                updateButtonStates();
-            });
-            
-            return button;
-        }
-
-                // Function to apply upgrades to description
-        function applyUpgrades(description, upgrades, level) {
-            if (level < 1) return description;
-            
-            let result = description;
-            for (let i = 0; i < upgrades.length; i++) {
-                const upgradeValue = upgrades[i] * level;
-                result = result.replace(`(${i+1})`, upgradeValue);
-            }
-            return result;
-        }
-        
-        // Function to add an extra action
-        function addExtraAction() {
-            const input = EAInputField.value.trim().toLowerCase();
-            if (!input) return;
-            
-            // Find matching action (case insensitive)
-            const matchedAction = EAList.find(action => {
-                const name = action.split(':')[0].toLowerCase();
-                return name === input;
-            });
-            
-            if (!matchedAction) {
-                // Show error
-                extraActionsError.style.display = 'inline';
-                setTimeout(() => {
-                    extraActionsError.style.display = 'none';
-                }, 1000);
-                return;
-            }
-            
-            // Parse action data with new format
-            const parts = matchedAction.split(/\[([^\]]+)\]/).filter(Boolean);
-            const namePart = parts[0].split(':');
-            const cleanName = namePart[0].trim();
-            const cleanDesc = namePart[1].trim();
-            
-            const color = parts[1] ? parts[1].trim() : '#4CAF50';
-            const upgrade1 = parts[2] ? parseInt(parts[2].replace('+', '')) : 0;
-            const upgrade2 = parts[3] ? (parts[3].toLowerCase().includes('weapon') ? 'weapon' : parseInt(parts[3].replace('+', ''))) : 0;
-            
-            const isWeapon = parts.some(p => p.toLowerCase().includes('weapon'));
-            const upgrades = [];
-            if (!isNaN(upgrade1)) upgrades.push(upgrade1);
-            if (!isNaN(upgrade2)) upgrades.push(upgrade2);
-            
-            const actionData = {
-                name: cleanName,
-                description: cleanDesc,
-                color: color,
-                isWeapon: isWeapon,
-                upgrades: upgrades
-            };
-            
-            // Check if action already exists
-            const existingButton = document.querySelector(`.extra-action-button[data-name="${cleanName}"]`);
-            if (existingButton) {
-                // Upgrade existing action
-                const currentLevel = parseInt(existingButton.dataset.level) || 1;
-                existingButton.dataset.level = currentLevel + 1;
-                existingButton.textContent = `${cleanName}+${currentLevel}`;
-                
-                // Update description with upgrades
-                const baseDesc = existingButton.dataset.baseDescription;
-                const upgrades = JSON.parse(existingButton.dataset.upgrades);
-                existingButton.title = applyUpgrades(baseDesc, upgrades, currentLevel);
-            } else {
-                // Add new action
-                const button = createExtraActionButton(cleanName, actionData);
-                extraActionsButtons.appendChild(button);
-                addedExtraActions[cleanName] = true;
-            }
-            
-            EAInputField.value = '';
-        }
-        
-        // Function to remove an extra action (even upgraded ones)
-        function removeExtraAction(name) {
-            const buttons = document.querySelectorAll(`.extra-action-button[data-name="${name}"]`);
-            buttons.forEach(button => {
-                button.remove();
-            });
-            delete addedExtraActions[name];
-        }
-        
-        // Event listeners for extra actions
-        EAAddButton.addEventListener('click', addExtraAction);
-        EAInputField.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                addExtraAction();
-            }
-        });
         
         // Weird world additions (only available when toggle is on)
         const weirdWorldWeapons = [
@@ -1938,23 +1681,17 @@ const profList = [
             
             const maxIndex = weirdWorldToggle.checked ? maxWeirdWorldIndex : maxRegularIndex;
             
-            // Get two different random numbers not in avoidList
-            let num1 = getRandomNumberAvoiding(maxIndex, avoidList);
-            let num2 = getRandomNumberAvoiding(maxIndex, avoidList);
+            // Get two different random numbers
+            let num1 = getRandomNumber(maxIndex);
+            let num2 = getRandomNumber(maxIndex);
             
             // Ensure they're different
             while (num2 === num1) {
-                num2 = getRandomNumberAvoiding(maxIndex, avoidList);
+                num2 = getRandomNumber(maxIndex);
             }
 
             // Store the roll numbers
             currentRollNumbers = [num1, num2];
-
-                        // Update avoidList (FIFO with max 14 entries)
-            avoidList.push(num1, num2);
-            while (avoidList.length > MAX_AVOID_LIST_SIZE) {
-                avoidList.shift(); // Remove oldest entries
-            }
 
             console.log("Rolled numbers:", num1, num2);
             
@@ -1992,28 +1729,6 @@ const profList = [
                         prof2 = weirdWorldProfList[weirdIndex];
                     }
                 }
-            }
-
-                        // Helper function to get random number avoiding certain values
-            function getRandomNumberAvoiding(max, avoidList) {
-                let num;
-                const availableNumbers = [];
-                
-                // Create list of available numbers
-                for (let i = 0; i <= max; i++) {
-                    if (!avoidList.includes(i)) {
-                        availableNumbers.push(i);
-                    }
-                }
-                
-                // If no available numbers (shouldn't happen with 69 max and 14 avoid)
-                if (availableNumbers.length === 0) {
-                    return getRandomNumber(max);
-                }
-                
-                // Get random index from available numbers
-                const randomIndex = Math.floor(Math.random() * availableNumbers.length);
-                return availableNumbers[randomIndex];
             }
 
             // Process and combine professions
@@ -2102,10 +1817,6 @@ const profList = [
             createActionButtons();
             createUniversalButtons();
             updateResourceDisplays();
-
-            // Clear Extra Actions
-            extraActionsButtons.innerHTML = '';
-            addedExtraActions = {};
             
             // Reset turn state
             currentTP = 6;
