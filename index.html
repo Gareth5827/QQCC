@@ -241,17 +241,6 @@
         /* Extra Action Button Styles */
         .extra-action-button {
             position: relative;
-            padding: 8px 25px 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            min-width: 120px;
-            text-align: left;
-            color: white;
-            margin-right: 5px;
-            margin-bottom: 5px;
-            transition: all 0.2s;
         }
         
         .extra-action-button:hover {
@@ -289,7 +278,7 @@
         
         /* Ensure tooltips show full description */
         .extra-action-button:hover::after {
-            content: attr(title);
+            content: attr(data-description);
             position: absolute;
             bottom: 100%;
             left: 50%;
@@ -1574,46 +1563,50 @@ const profList = [
 
         // Function to create an extra action button
         function createExtraActionButton(name, data, level = 1) {
-            const button = document.createElement('button');
-            button.className = 'extra-action-button';
-            button.textContent = level > 1 ? `${name}+${level-1}` : name;
-            button.style.backgroundColor = data.color;
+        const button = document.createElement('button');
+        button.className = 'extra-action-button';
+        button.textContent = level > 1 ? `${name}+${level-1}` : name;
+        button.style.backgroundColor = data.color;
+        
+        // Calculate upgraded description
+        const upgradedDesc = applyUpgrades(data.description, data.upgrades, level-1);
+        
+        // Parse action costs
+        const costs = parseActionCosts(upgradedDesc);
+        
+        // Store button data - use data-attributes for tooltip
+        button.dataset.name = name;
+        button.dataset.description = upgradedDesc; // For tooltip
+        button.dataset.baseDescription = data.description;
+        button.dataset.upgrades = JSON.stringify(data.upgrades);
+        button.dataset.tpCost = costs.tpCost;
+        button.dataset.manaCost = costs.manaCost;
+        button.dataset.isWeapon = costs.isWeapon ? 'true' : 'false';
+        button.dataset.level = level;
+        
+        // Add close button
+        const closeBtn = document.createElement('span');
+        closeBtn.className = 'close-btn';
+        closeBtn.innerHTML = '×';
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeExtraAction(name);
+        });
+        button.appendChild(closeBtn);
+        
+        // Updated click handler - properly pass all parameters
+        button.addEventListener('click', () => {
+            const tpCost = parseInt(button.dataset.tpCost) || 0;
+            const manaCost = parseInt(button.dataset.manaCost) || 0;
+            const isWeapon = button.dataset.isWeapon === 'true';
             
-            // Calculate upgraded description
-            const upgradedDesc = applyUpgrades(data.description, data.upgrades, level-1);
-            
-            // Parse action costs
-            const costs = parseActionCosts(upgradedDesc);
-            
-            // Store button data
-            button.dataset.name = name;
-            button.dataset.baseDescription = data.description;
-            button.dataset.upgrades = JSON.stringify(data.upgrades);
-            button.dataset.tpCost = costs.tpCost;
-            button.dataset.manaCost = costs.manaCost;
-            button.dataset.isWeapon = data.isWeapon ? 'true' : 'false';
-            button.dataset.level = level;
-            button.title = upgradedDesc; // Tooltip shows upgraded description
-            
-            // Add close button
-            const closeBtn = document.createElement('span');
-            closeBtn.className = 'close-btn';
-            closeBtn.innerHTML = '×';
-            closeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                removeExtraAction(name);
-            });
-            button.appendChild(closeBtn);
-            
-            // Add click handler
-            button.addEventListener('click', () => {
-                useAction(costs.tpCost, costs.manaCost, data.isWeapon);
-                updateResourceDisplays();
-                updateButtonStates();
-            });
-            
-            return button;
-        }
+            useAction(tpCost, manaCost, isWeapon);
+            updateResourceDisplays();
+            updateButtonStates();
+        });
+        
+        return button;
+    }
 
                 // Function to apply upgrades to description
         function applyUpgrades(description, upgrades, level) {
