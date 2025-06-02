@@ -776,87 +776,98 @@
         // Event listener for end turn button
         endTurnButton.addEventListener('click', endTurn);
 
-            function addExtraAction() {
-        const input = document.getElementById("EAInputField").value.trim();
-        const errorText = document.getElementById("ErrorText");
-        
-        if (!input) {
-            errorText.textContent = "Please enter an action name";
-            errorText.style.display = "block";
-            return;
-        }
-        
-        // Find matching action (case insensitive, ignore spaces)
-        const matchedAction = Object.keys(EAList).find(action => 
-            action.replace(/\s+/g, '').toLowerCase() === input.replace(/\s+/g, '').toLowerCase()
-        );
-        
-        if (!matchedAction) {
-            errorText.textContent = "Action not found";
-            errorText.style.display = "block";
-            return;
-        }
-        
-        errorText.style.display = "none";
-        
-        // Add or upgrade action in ActiveEAList
-        if (ActiveEAList[matchedAction]) {
-            ActiveEAList[matchedAction].count += 1;
-        } else {
-            ActiveEAList[matchedAction] = {
-                count: 1,
-                data: EAList[matchedAction]
-            };
-        }
-        
-        updateActiveEAList();
-        document.getElementById("EAInputField").value = "";
-        }
-    
-    function updateActiveEAList() {
-        const container = document.getElementById("ActiveEAList");
-        container.innerHTML = "";
-        
-        Object.keys(ActiveEAList).forEach(actionKey => {
-            const action = ActiveEAList[actionKey];
-            const count = action.count;
-            const data = action.data;
-            
-            // Process description with values
-            let description = data.description;
-            
-            // Replace (x) with calculated values
-            Object.keys(data.baseValues).forEach(key => {
-                const base = data.baseValues[key];
-                const upgrade = data.upgradeValues ? (data.upgradeValues[key] || 0) : 0;
-                const total = base + (upgrade * (count - 1));
-                
-                // First replace (x) with base value
-                description = description.replace(`(${key})`, base);
-                // Then replace any remaining (x) with total value
-                description = description.replace(`(${key})`, total);
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById("EAInputField").addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    addExtraAction();
+                }
             });
-            
-            const actionElement = document.createElement("div");
-            actionElement.className = "active-action";
-            
-            const actionText = document.createElement("span");
-            actionText.textContent = `${actionKey}${count > 1 ? `+${count-1}` : ''}: ${description}`;
-            
-            const removeBtn = document.createElement("button");
-            removeBtn.textContent = "X";
-            removeBtn.className = "remove-btn";
-            removeBtn.onclick = () => removeExtraAction(actionKey);
-            
-            actionElement.appendChild(actionText);
-            actionElement.appendChild(removeBtn);
-            container.appendChild(actionElement);
         });
+        
+        function addExtraAction() {
+            const inputField = document.getElementById("EAInputField");
+            const input = inputField.value.trim();
+            const errorText = document.getElementById("ErrorText");
+            
+            if (!input) {
+                showError("Please enter an action name");
+                return;
+            }
+            
+            // Find matching action (case insensitive, ignore spaces)
+            const matchedAction = Object.keys(EAList).find(action => 
+                action.replace(/\s+/g, '').toLowerCase() === input.replace(/\s+/g, '').toLowerCase()
+            );
+            
+            if (!matchedAction) {
+                showError("Try something else!");
+                return;
+            }
+            
+            errorText.style.display = "none";
+            
+            // Add or upgrade action in ActiveEAList
+            if (ActiveEAList[matchedAction]) {
+                ActiveEAList[matchedAction].count += 1;
+            } else {
+                ActiveEAList[matchedAction] = {
+                    count: 1,
+                    data: EAList[matchedAction]
+                };
+            }
+            
+            updateActiveEAList();
+            inputField.value = "";
+            inputField.focus();
         }
         
-        function removeExtraAction(actionKey) {
-            delete ActiveEAList[actionKey];
-            updateActiveEAList();
+        function showError(message) {
+            const errorText = document.getElementById("ErrorText");
+            errorText.textContent = message;
+            errorText.style.display = "block";
+            setTimeout(() => {
+                errorText.style.display = "none";
+            }, 1000);
+        }
+        
+        function updateActiveEAList() {
+            const container = document.getElementById("ActiveEAList");
+            container.innerHTML = "";
+            
+            Object.keys(ActiveEAList).forEach(actionKey => {
+                const action = ActiveEAList[actionKey];
+                const count = action.count;
+                const data = action.data;
+                
+                // Create a working copy of the description
+                let description = data.description;
+                
+                // Replace all (x) placeholders with calculated values
+                Object.keys(data.baseValues).forEach(key => {
+                    const base = data.baseValues[key];
+                    const upgrade = data.upgradeValues ? (data.upgradeValues[key] || 0) : 0;
+                    const total = base + (upgrade * (count - 1));
+                    
+                    // Create a regex to match all (key) occurrences
+                    const regex = new RegExp(`\\(${key}\\)`, 'g');
+                    description = description.replace(regex, total);
+                });
+                
+                const actionElement = document.createElement("div");
+                actionElement.className = "active-action";
+                
+                const actionText = document.createElement("span");
+                actionText.textContent = `${actionKey}${count > 1 ? `+${count-1}` : ''}: ${description}`;
+                
+                const removeBtn = document.createElement("button");
+                removeBtn.textContent = "X";
+                removeBtn.className = "remove-btn";
+                removeBtn.onclick = () => removeExtraAction(actionKey);
+                
+                actionElement.appendChild(actionText);
+                actionElement.appendChild(removeBtn);
+                container.appendChild(actionElement);
+            });
         }
 
         // Function to roll a single die
