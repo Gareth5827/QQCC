@@ -535,6 +535,8 @@
         let currentTP = 6;
         let weaponUsed = false;
         let currentRollNumbers = [0, 0];
+        let avoidList = [];
+        const MAX_AVOID_LIST_SIZE = 14;
         
         // DOM Elements for Resource Manager
         const tpDisplay = document.getElementById('tpDisplay');
@@ -1563,50 +1565,44 @@ const profList = [
 
         // Function to create an extra action button
         function createExtraActionButton(name, data, level = 1) {
-        const button = document.createElement('button');
-        button.className = 'extra-action-button';
-        button.textContent = level > 1 ? `${name}+${level-1}` : name;
-        button.style.backgroundColor = data.color;
-        
-        // Calculate upgraded description
-        const upgradedDesc = applyUpgrades(data.description, data.upgrades, level-1);
-        
-        // Parse action costs
-        const costs = parseActionCosts(upgradedDesc);
-        
-        // Store button data - use data-attributes for tooltip
-        button.dataset.name = name;
-        button.dataset.description = upgradedDesc; // For tooltip
-        button.dataset.baseDescription = data.description;
-        button.dataset.upgrades = JSON.stringify(data.upgrades);
-        button.dataset.tpCost = costs.tpCost;
-        button.dataset.manaCost = costs.manaCost;
-        button.dataset.isWeapon = costs.isWeapon ? 'true' : 'false';
-        button.dataset.level = level;
-        
-        // Add close button
-        const closeBtn = document.createElement('span');
-        closeBtn.className = 'close-btn';
-        closeBtn.innerHTML = '×';
-        closeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            removeExtraAction(name);
-        });
-        button.appendChild(closeBtn);
-        
-        // Updated click handler - properly pass all parameters
-        button.addEventListener('click', () => {
-            const tpCost = parseInt(button.dataset.tpCost) || 0;
-            const manaCost = parseInt(button.dataset.manaCost) || 0;
-            const isWeapon = button.dataset.isWeapon === 'true';
+            const button = document.createElement('button');
+            button.className = 'extra-action-button';
+            button.textContent = level > 1 ? `${name}+${level-1}` : name;
+            button.style.backgroundColor = data.color;
             
-            useAction(tpCost, manaCost, isWeapon);
-            updateResourceDisplays();
-            updateButtonStates();
-        });
-        
-        return button;
-    }
+            // Calculate upgraded description
+            const upgradedDesc = applyUpgrades(data.description, data.upgrades, level-1);
+            
+            // Parse action costs
+            const costs = parseActionCosts(upgradedDesc);
+            
+            // Store button data - using same approach as other action buttons
+            button.dataset.name = name;
+            button.dataset.tpCost = costs.tpCost;
+            button.dataset.manaCost = costs.manaCost;
+            button.dataset.isWeapon = costs.isWeapon ? 'true' : 'false';
+            button.dataset.level = level;
+            button.title = upgradedDesc; // This is what makes the tooltip work like other buttons
+            
+            // Add close button
+            const closeBtn = document.createElement('span');
+            closeBtn.className = 'close-btn';
+            closeBtn.innerHTML = '×';
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                removeExtraAction(name);
+            });
+            button.appendChild(closeBtn);
+            
+            // Click handler - matches other action buttons
+            button.addEventListener('click', () => {
+                useAction(costs.tpCost, costs.manaCost, costs.isWeapon);
+                updateResourceDisplays();
+                updateButtonStates();
+            });
+            
+            return button;
+        }
 
                 // Function to apply upgrades to description
         function applyUpgrades(description, upgrades, level) {
@@ -1942,17 +1938,23 @@ const profList = [
             
             const maxIndex = weirdWorldToggle.checked ? maxWeirdWorldIndex : maxRegularIndex;
             
-            // Get two different random numbers
-            let num1 = getRandomNumber(maxIndex);
-            let num2 = getRandomNumber(maxIndex);
+            // Get two different random numbers not in avoidList
+            let num1 = getRandomNumberAvoiding(maxIndex, avoidList);
+            let num2 = getRandomNumberAvoiding(maxIndex, avoidList);
             
             // Ensure they're different
             while (num2 === num1) {
-                num2 = getRandomNumber(maxIndex);
+                num2 = getRandomNumberAvoiding(maxIndex, avoidList);
             }
 
             // Store the roll numbers
             currentRollNumbers = [num1, num2];
+
+                        // Update avoidList (FIFO with max 14 entries)
+            avoidList.push(num1, num2);
+            while (avoidList.length > MAX_AVOID_LIST_SIZE) {
+                avoidList.shift(); // Remove oldest entries
+            }
 
             console.log("Rolled numbers:", num1, num2);
             
@@ -1990,6 +1992,28 @@ const profList = [
                         prof2 = weirdWorldProfList[weirdIndex];
                     }
                 }
+            }
+
+                        // Helper function to get random number avoiding certain values
+            function getRandomNumberAvoiding(max, avoidList) {
+                let num;
+                const availableNumbers = [];
+                
+                // Create list of available numbers
+                for (let i = 0; i <= max; i++) {
+                    if (!avoidList.includes(i)) {
+                        availableNumbers.push(i);
+                    }
+                }
+                
+                // If no available numbers (shouldn't happen with 69 max and 14 avoid)
+                if (availableNumbers.length === 0) {
+                    return getRandomNumber(max);
+                }
+                
+                // Get random index from available numbers
+                const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+                return availableNumbers[randomIndex];
             }
 
             // Process and combine professions
