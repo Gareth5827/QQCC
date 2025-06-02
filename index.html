@@ -888,6 +888,15 @@
             return base;
         }
         
+        // Remove function
+        function removeExtraAction(actionKey) {
+            if (ActiveEAList[actionKey]) {
+                delete ActiveEAList[actionKey];
+                updateActiveEAList();
+            }
+        }
+        
+        // Updated display function with proper remove button creation
         function updateActiveEAList() {
             const container = document.getElementById("ActiveEAList");
             container.innerHTML = "";
@@ -899,7 +908,6 @@
                 
                 let description = data.description;
                 
-                // Process all value replacements in a single pass
                 Object.keys(data.baseValues).forEach(key => {
                     const base = data.baseValues[key];
                     const upgradeDef = data.upgrades?.[key];
@@ -918,6 +926,7 @@
                 const removeBtn = document.createElement("button");
                 removeBtn.textContent = "X";
                 removeBtn.className = "remove-btn";
+                // This is the crucial binding - using arrow function to preserve actionKey
                 removeBtn.onclick = () => removeExtraAction(actionKey);
                 
                 actionElement.appendChild(actionText);
