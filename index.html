@@ -518,7 +518,7 @@
         let weaponUsed = false;
         let currentRollNumbers = [0, 0];
         let avoidList = [];
-        const MAX_AVOID_LIST_SIZE = 14;
+        const MAX_AVOID_LIST_SIZE = 20;
         
         // DOM Elements for Resource Manager
         const tpDisplay = document.getElementById('tpDisplay');
@@ -543,7 +543,7 @@
             10: ["ArcaneBolt", "ArchmagesStaff", "ArcaneMastery", "ArchmagesAmulet"],
             11: ["RayOfSunshine", "HolyRay", "Empower", "HolyLocket"],
             12: ["PetrifyingGaze", "EnergySyphon", "CullOfTheMeek", "ShamansGarb"],
-            13: ["GoldenBroadsword", "RampagersJavelin", "Brutality", "RampagersHelmet"],
+            13: ["GoldenBroadsword", "RampagersJavalin", "Brutality", "RampagersHelmet"],
             14: ["ThunderBolt", "TwinBolt", "FierceGust", "ElectromancersHelmet"],
             15: ["Bloodlust", "BeheadingAxe", "Taunt", "GladiatorsCape"],
             16: ["UnderworldCurse", "InfernalShove", "BurningScimitar", "InfernalCharm"],
@@ -568,18 +568,18 @@
             35: ["LightningBomb", "MysticPush", "RuneOfWisdom", "SacrificersGauntlet"],
             36: ["PlagueCloud", "VenomWave", "Necrotic", "VenomancersHood"],
             37: ["CharredQuarterstaff", "JungleSpear", "OceanboundFlail", "ElementalistsRing"],
-            48: ["Warpath", "HorrificForesight", "WeaponMastery", "SpikedHandwraps"],
+            48: ["Warpath", "HorrificForesight", "WeaponMaster", "SpikedHandwraps"],
             39: ["RiseFromTheDead", "WhispersFromTheDamned", "HandOfTheCrypt", "TombShard"],
             40: ["SpiritArmour", "WarhammerOfTheDead", "GraveDust", "GravediggersPendant"],
             41: ["Torpedo", "RingWave", "Waveblade", "WiseAmulet"],
-            42: ["WartornStaff", "Warpath", "EssencePrison", "ForbiddenCrown"],
+            42: ["WartornStaff", "Weakness", "EssencePrison", "ForbiddenCrown"],
             43: ["Tremor", "Warhammer", "HeavyHanded", "BuriedGauntlet"],
             44: ["FreezingTomb", "IcyWind", "NorthernWisdom", "FrostbornBracelet"],
             45: ["HolyStaff", "BlessingOfProtection", "RayOfRetribution", "PriestsRobe"],
             46: ["HonourOfAlliance", "BondOfFaith", "RoyalCharge", "KingsCloak"],
             47: ["CloakAndDagger", "SpiritBlade", "MindBreaker", "VeilOfShadows"],
             48: ["SteelArrow", "Hasted", "RogueTactics", "SkinningKnife"],
-            49: ["GreatCrossbow", "Volley", "Sharpshot", "GreatRoutesRegalia"],
+            49: ["GreatCrossbow", "Volley", "SharpShot", "GreatRoutesRegalia"],
             50: ["RitualShield", "ShieldSweep", "PowerDash", "ArmletOfTheSacrificed"],
             51: ["Pummel", "JusticeLeap", "Rampage", "DarkIronGauntlet"],
             52: ["HuntersBow", "CombatRoll", "StraightShot", "DruidsSatchel"],
@@ -1266,7 +1266,7 @@ const spellList = [
     // 51
     "Torpedo: [Ally] [20 FT] Give a buff that lasts until the end of the turn, whenever they use a [Spell] action, deal 3 + WIT Magic damage to the target [2 TP, 10 Mana]   Ring wave: [Ally] [20 FT] Heal the target by 1D4 + WIT health and knock back all enemies within a 10 FT range 10 FT back [2 TP, 18 Mana] OR [3 TP, 4 Mana]   Waveblade: [Ally] [Self] [20 FT] Give a buff that makes the next (Weapon) action crit and deal +5 Magic damage [2 TP, 14 Mana]",
     // 52
-    "Warpath: [Enemy] [20 FT] Target is debuffed and takes 1D6 Dark damage whenever they are hit by a (Weapon) action until the end of their next turn [2 TP, 8 Mana]   Essence prison: [Enemy] [20 FT] Target is debuffed and takes 1D10 + INS Dark damage if they move (debuff ends as soon as the target takes damage) [1 TP, 10 Mana]",
+    "Weakness: [Enemy] [20 FT] Target is debuffed and takes 1D6 Dark damage whenever they are hit by a (Weapon) action until the end of their next turn [2 TP, 8 Mana]   Essence prison: [Enemy] [20 FT] Target is debuffed and takes 1D10 + INS Dark damage if they move (debuff ends as soon as the target takes damage) [1 TP, 10 Mana]",
     // 53
     "Tremor: [Attack] [Enemy] Target a 5 FT wide and 25 FT long area in any direction, and deal 1D6 + END damage to all enemies inside. Any unit that takes damage makes an END save, any that fail are knocked prone and have Stun 2 [3 TP, 8 Mana] OR [2 TP, 16 Mana]",
     // 54
@@ -2249,12 +2249,12 @@ const profList = [
             const regenBtn = document.createElement('button');
             regenBtn.className = 'action-button';
             regenBtn.textContent = 'Regenerate';
-            regenBtn.title = 'Heal 3 Health and Mana';
+            regenBtn.title = 'Heal 2 Health and Mana';
             regenBtn.dataset.tpCost = '1';
             regenBtn.addEventListener('click', () => {
                 useAction(1, 0, false);
-                currentHealth = Math.min(maxHealth, currentHealth + 3);
-                currentMana = Math.min(maxMana, currentMana + 3);
+                currentHealth = Math.min(maxHealth, currentHealth + 2);
+                currentMana = Math.min(maxMana, currentMana + 2);
                 updateResourceDisplays();
                 updateButtonStates();
                 updateStatDisplays();
