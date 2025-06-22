@@ -602,6 +602,41 @@
         const diceResultBox = document.getElementById('diceResultBox');
 
         const EAList = {
+            "Survival": {
+                description: "You take (1) less Poison damage",
+                baseValues: {1: 3},
+                upgrades: {
+                    1: { linear: 3 },
+                }
+            },
+            "Cave dwelling": {
+                description: "You get a +(1) to Perception in darkness",
+                baseValues: {1: 2},
+                upgrades: {
+                    1: { linear: 2 },  // +2 per level (was upgradeValues: {1: 2})
+                }
+            },
+            "Wrestling": {
+                description: "+(1) to PWR saves",
+                baseValues: {1: 2},
+                upgrades: {
+                    1: { linear: 2 },  // +2 per level (was upgradeValues: {1: 2})
+                }
+            },
+            "Lethal hunting": {
+                description: "Deal 1D(1) more damage to debuffed enemies",
+                baseValues: {1: 6},
+                upgrades: {
+                    1: { linear: 2 },  // +2 per level (was upgradeValues: {1: 2})
+                }
+            },
+            "Nocturnal": {
+                description: "+(1) Advantage in combat if you are in darkness",
+                baseValues: {1: 2},
+                upgrades: {
+                    1: { linear: 2 },  // +2 per level (was upgradeValues: {1: 2})
+                }
+            },
             "FireBall": {
                 description: "Deal 1D8 + WIT + (1) Fire damage and deal (2) Fire damage at the start of their turn [2 TP, 14 Mana]",
                 baseValues: {1: 1, 2: 2},
@@ -610,6 +645,7 @@
                     2: { linear: 4 }   // +4 per level (was upgradeValues: {2: 4})
                 }
             },
+        
             "Heal": {
                 description: "Restore (1) HP to target [1 TP, 10 Mana]",
                 baseValues: {1: 5},
